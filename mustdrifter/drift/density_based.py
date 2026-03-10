@@ -9,6 +9,11 @@ from scipy.special import kl_div
 import logging
 logger = logging.getLogger(__name__)
 
+import os 
+# Needed for parallel processing to ensure that all CPU cores are utilized effectively
+os.system("taskset -p 0xff %d" % os.getpid())
+
+
 def js_drift(reference_sample, test_sample, filename):
     logger.info("Running JS drift detection...")
     
@@ -108,7 +113,11 @@ def run_log_likelihood_permutation(
     test_sample_size,
     alpha=1e-12
 ):
-    logger.debug(f"Running permutation {permutation} for log likelihood drift...")
+    # Needed for parallel processing to ensure that all CPU cores are utilized effectively
+    os.system("taskset -p 0xff %d" % os.getpid())
+
+
+    logger.info(f"Running permutation {permutation} for log likelihood drift.")
     rng = np.random.default_rng(seed=permutation)
     shuffled = rng.permutation(aggregated_samples)
 

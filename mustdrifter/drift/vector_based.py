@@ -10,6 +10,9 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
+# Needed for parallel processing to ensure that all CPU cores are utilized effectively
+os.system("taskset -p 0xff %d" % os.getpid())
+
 ## ------ MMD drift ------ ##
 
 def run_mmd_permutation(
@@ -20,7 +23,11 @@ def run_mmd_permutation(
     custom_kernel,
     drift_magnitude
 ):
-    logger.debug(f"Running MMD permutation {permutation}.")
+    # Needed for parallel processing to ensure that all CPU cores are utilized effectively
+    os.system("taskset -p 0xff %d" % os.getpid())
+
+
+    logger.info(f"Running MMD permutation {permutation}.")
     rng = np.random.default_rng(seed=permutation)
     shuffled = rng.permutation(aggregated_samples)
 
@@ -139,7 +146,11 @@ def run_cos_permutation(
     test_sample_size,
     drift_magnitude
 ):
-    logger.debug(f"Running cosine permutation {permutation}.")
+    # Needed for parallel processing to ensure that all CPU cores are utilized effectively
+    os.system("taskset -p 0xff %d" % os.getpid())
+
+
+    logger.info(f"Running cosine permutation {permutation}.")
     rng = np.random.default_rng(seed=permutation)
     shuffled = rng.permutation(aggregated_samples)
 
