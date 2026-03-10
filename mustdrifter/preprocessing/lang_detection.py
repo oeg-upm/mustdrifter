@@ -2,6 +2,8 @@ from pathlib import Path
 import fasttext
 import urllib.request
 
+import logging
+logger = logging.getLogger(__name__)
 
 MODEL_URL = "https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.ftz"
 MODEL_PATH = Path(__file__).resolve().parent / "lid.176.ftz"

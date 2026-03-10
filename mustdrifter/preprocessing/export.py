@@ -2,6 +2,9 @@ import json
 import numpy as np
 import os
 
+import logging
+logger = logging.getLogger(__name__)
+
 def export_pos_annotations(df, df_pos_distribution, filename_path, observed_pos=None):
     if observed_pos is not None:
         df_pos_distribution= df_pos_distribution[observed_pos+["doc_id"]]

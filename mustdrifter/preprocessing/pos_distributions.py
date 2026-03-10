@@ -2,6 +2,10 @@ import pandas as pd
 import numpy as np
 
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 def get_pos_distribution(df_annotations):
     pos_dist = (
         df_annotations.groupby(["doc_id", "upos"])

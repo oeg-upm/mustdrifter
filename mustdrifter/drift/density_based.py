@@ -6,6 +6,9 @@ from scipy.spatial.distance import jensenshannon
 from scipy.stats import entropy
 from scipy.special import kl_div
 
+import logging
+logger = logging.getLogger(__name__)
+
 def js_drift(reference_sample, test_sample, filename):
     reference_sample = np.asarray(reference_sample, dtype=np.float64)
     test_sample = np.asarray(test_sample, dtype=np.float64)

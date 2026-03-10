@@ -2,6 +2,11 @@ import stanza
 import pandas as pd
 
 from .lang_detection import detect_lang
+
+
+import logging
+logger = logging.getLogger(__name__)
+
 # ---------- POS dynamic pipelines ----------
 
 def pos_tags_to_df(pos_tags, doc_id):

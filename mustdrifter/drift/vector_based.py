@@ -7,6 +7,8 @@ from joblib import Parallel, delayed
 import numpy as np
 import os
 
+import logging
+logger = logging.getLogger(__name__)
 
 ## ------ MMD drift ------ ##
 

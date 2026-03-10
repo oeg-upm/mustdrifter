@@ -9,7 +9,6 @@ from .preprocessing import export_pos_annotations, export_pos_annotations_releva
 
 from .drift import cos_drift, ks_drift, mmd_drift, js_drift, kl_drift, log_likelihood_drift
 
-
 class MuSTDrifter:
     """ Multi-Source Temporal Drifter 
     """
@@ -46,59 +45,95 @@ class MuSTDrifter:
         os.makedirs(self.semantic_drift_path,      exist_ok=True)
         os.makedirs(self.lexical_drift_path,       exist_ok=True)
 
-
+        self.logger = logging.getLogger(__name__)
     
     def load_embeddings(self, period_id):
-        with open(f'{self.embeddings_path}/{period_id}.npy', 'rb') as f:
+        _path= f'{self.embeddings_path}/{period_id}.npy'
+        with open(_path, 'rb') as f:
             return np.load(f)
+        self.logger.info(f"Embeddings loaded from {period_id} at {_path}")
 
     def load_pos_lexical(self, period_id):
-        with open(f'{self.pos_lexical_path}/{period_id}.npy', 'rb') as f:
+        _path= f'{self.pos_lexical_path}/{period_id}.npy'
+        with open(_path, 'rb') as f:
             return np.load(f)
-    
+        self.logger.info(f"Lexical features loaded from {period_id} at {_path}")
+        
     def load_pos_ngram(self, period_id):
-        with open(f'{self.pos_ngram_path}/{period_id}.npy', 'rb') as f:
+        _path= f'{self.pos_ngram_path}/{period_id}.npy'
+        with open(_path, 'rb') as f:
             return np.load(f)
+        self.logger.info(f"N-gram features loaded from {period_id} at {_path}")
         
     def load_pos_sintax(self, period_id):
-        with open(f'{self.pos_sintax_path}/{period_id}.npy', 'rb') as f:
+        _path= f'{self.pos_sintax_path}/{period_id}.npy'
+        with open(_path, 'rb') as f:
             return np.load(f)
+        self.logger.info(f"Sintax features loaded from {period_id} at {_path}")
 
     def annotate_pos(self):
+        self.logger.info("Starting POS annotation...")
         self.df, self.df_annotations = annotate_pos(self.df, f"{self.pos_annotations_path}/dataset")
-
+        self.logger.info(f"POS annotation completed.")
+    
     def load_pos_annotation(self):
+        self.logger.info("Loading POS annotations...")
         self.df = pd.read_csv(f"{self.pos_annotations_path}/dataset.csv", index_col="Unnamed: 0")
         self.df_annotations= pd.read_csv(f"{self.pos_annotations_path}/dataset_pos.csv")
+        self.logger.info("POS annotations loaded.")
         return self.df, self.df_annotations
 
     def generate_pos_distributions(self):
+        self.logger.info("Generating POS distributions...")
+
         if self.df_annotations is None:
             raise ValueError("POS annotations not found. Please run annotate_pos() first.")
+        
         self.df_pos_distribution=       get_pos_distribution(self.df_annotations)
+        self.logger.info("POS distribution generated.")
+        
         self.df_pos_ngram_distribution= get_pos_ngram_distribution(self.df_annotations)
+        self.logger.info("POS n-gram distribution generated.")
+        
         self.df_lexical_distribution=   get_lexical_distribution(self.df_annotations, self.df)
+        self.logger.info("Lexical distribution generated.")
 
         export_pos_annotations(         self.df, self.df_pos_distribution,       filename_path=self.pos_sintax_path)
+        self.logger.info("POS annotations exported for sintax.")
+        
         export_pos_annotations_relevant(self.df, self.df_pos_distribution,       filename_path=self.pos_sintax_relevant_path)
+        self.logger.info("POS annotations exported for relevant sintax.")
+        
         export_pos_ngrams(              self.df, self.df_pos_ngram_distribution, filename_path=self.pos_ngram_path, observed_pos=None)
+        self.logger.info("POS n-grams exported.")
+        
         export_pos_lexical(                      self.df_lexical_distribution,   filename_path=self.pos_lexical_path)
+        self.logger.info("Lexical features exported.")
 
     def generate_embeddings(self):
+        self.logger.info("Generating embeddings...")
         if self.encode is None:
+            self.logger("Encoder not initialized. Initializing now...")
             self._init_encoder()
+            
         for period_id, documents in self.df.groupby("period_id"):
             tokens= self.tokenize(documents["content"].dropna().astype(str).tolist())
             vectors= self.encode(tokens).numpy()
+            self.logger.info(f"Embeddings generated for period {period_id} with shape {vectors.shape}.")
+
             with open(f'{self.embeddings_path}/{period_id}.npy', 'wb') as f:
                 np.save(f, vectors)
 
+            self.logger.info(f"Embeddings saved for period {period_id} at {self.embeddings_path}/{period_id}.npy")
+
     def generate_drift_dimensions(self):
+        self.logger.info("Generating dimensions for drift detection...")
         self.annotate_pos()
         self.generate_pos_distributions()
         self.generate_embeddings()
 
     def calculate_semantic_drift(self, reference_period, test_period, metrics=["cos_drift"]):
+        self.logger.info(f"Calculating semantic drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_embeddings(reference_period)
         test_sample= self.load_embeddings(test_period)
 
@@ -106,6 +141,7 @@ class MuSTDrifter:
         return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics)
         
     def calculate_sintactic_drift(self, reference_period, test_period, metrics=["cos_drift"]):
+        self.logger.info(f"Calculating sintactic drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_pos_sintax(reference_period)
         test_sample= self.load_pos_sintax(test_period)
 
@@ -113,6 +149,7 @@ class MuSTDrifter:
         return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics)
 
     def calculate_lexical_drift(self, reference_period, test_period, metrics=["cos_drift"]):
+        self.logger.info(f"Calculating lexical drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_pos_lexical(reference_period)
         test_sample= self.load_pos_lexical(test_period)
 
@@ -120,6 +157,7 @@ class MuSTDrifter:
         return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics)
 
     def calculate_sintactic_ngram_drift(self, reference_period, test_period, metrics=["cos_drift"]):
+        self.logger.info(f"Calculating sintactic n-gram drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_pos_ngram(reference_period)
         test_sample= self.load_pos_ngram(test_period)
 
@@ -144,22 +182,30 @@ class MuSTDrifter:
         return drift
 
     def calculate_all_drift(self):
+        self.logger.info("Calculating drift for all period pairs...")
+
         period_ids= self.df["period_id"].unique()
 
         for i in range(len(period_ids)-1):
             for e in range(len(period_ids)-1):
+                self.logger.info(f"Calculating drift for period pair: {period_ids[i]} vs {period_ids[e]}")
                 reference_period= period_ids[i]
                 test_period= period_ids[e]
                 
                 self.calculate_semantic_drift( reference_period=reference_period, test_period=test_period, metrics=["cos_drift", "mmd_drift", "ks_drift"])
+                self.logger.info(f"Semantic drift calculated for period pair: {reference_period} vs {test_period}")
                 self.calculate_sintactic_drift(reference_period=reference_period, test_period=test_period, metrics=["js_drift", "kl_drift", "log_likelihood_drift"])
+                self.logger.info(f"Sintactic drift calculated for period pair: {reference_period} vs {test_period}")
                 self.calculate_lexical_drift(  reference_period=reference_period, test_period=test_period, metrics=["js_drift", "kl_drift", "log_likelihood_drift"])
-                
-    
+                self.logger.info(f"Lexical drift calculated for period pair: {reference_period} vs {test_period}")
+
+        self.logger.info("Drift calculation completed for all period pairs.")
+
     def _init_encoder(self, pretrained_model= "intfloat/multilingual-e5-large", tokenizer_max_len=512, device="cuda", batch_size=200):
         self.tokenizer=  TokenGenerator(pretrained_model, tokenizer_max_len=tokenizer_max_len ,batch_size=batch_size)
         self.tokenize=   self.tokenizer.tokenize_texts
 
         self.encoder=    EmbeddingsGenerator(pretrained_model, train_device=device, batch_size=batch_size)
         self.encode=     self.encoder.generate_embeddings
-        
+
+        self.logger.info(f"Encoder initialized with model {pretrained_model} on device {device}.")

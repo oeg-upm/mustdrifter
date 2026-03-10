@@ -1,6 +1,10 @@
 from frouros.detectors.data_drift import MMD, KSTest
 import numpy as np
 import json
+import logging
+
+logger = logging.getLogger(__name__)
+
 ## ------ KS drift ------ ##
 
 def ks_drift(reference_sample, test_sample, filename):
