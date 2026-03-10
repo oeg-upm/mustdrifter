@@ -24,7 +24,7 @@ def _get_lid():
 
 def detect_lang(text):
     global lid
-    logger.debug(f"Detecting language for text: {text[:30]}...")  # Log the beginning of the text for context
+    logger.debug(f"Detecting language for text: {text}...")  # Log the beginning of the text for context
     if not isinstance(text, str) or len(text.strip()) < 5:
         return "und"
     if lid is None: lid = _get_lid()
