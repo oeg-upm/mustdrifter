@@ -1,1 +1,1 @@
-from .mustdrifter import MustDrifter
+from .mustdrifter import MuSTDrifter

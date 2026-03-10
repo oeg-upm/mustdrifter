@@ -3,11 +3,11 @@ import os
 import numpy as np
 import pandas as pd
 
-from generators import TokenGenerator, EmbeddingsGenerator
-from preprocessing import annotate_pos, get_pos_distribution, get_pos_ngram_distribution, get_lexical_distribution
-from preprocessing import export_pos_annotations, export_pos_annotations_relevant, export_pos_ngrams, export_pos_lexical
+from .generators import TokenGenerator, EmbeddingsGenerator
+from .preprocessing import annotate_pos, get_pos_distribution, get_pos_ngram_distribution, get_lexical_distribution
+from .preprocessing import export_pos_annotations, export_pos_annotations_relevant, export_pos_ngrams, export_pos_lexical
 
-from drift import cos_drift, ks_drift, mmd_drift, js_drift, kl_drift, log_likelihood_drift
+from .drift import cos_drift, ks_drift, mmd_drift, js_drift, kl_drift, log_likelihood_drift
 
 
 class MuSTDrifter:
