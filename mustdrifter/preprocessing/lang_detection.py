@@ -12,8 +12,8 @@ _lid = None
 
 
 def _get_lid():
-    logger.info("Loading language detection model...")
     global _lid
+    logger.info("Loading language detection model...")
 
     if not MODEL_PATH.exists():
         urllib.request.urlretrieve(MODEL_URL, str(MODEL_PATH))
