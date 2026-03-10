@@ -188,10 +188,11 @@ class MuSTDrifter:
 
         for i in range(len(period_ids)-1):
             for e in range(len(period_ids)-1):
-                self.logger.info(f"Calculating drift for period pair: {period_ids[i]} vs {period_ids[e]}")
+                if i == e: continue
                 reference_period= period_ids[i]
                 test_period= period_ids[e]
-                
+                self.logger.info(f"Starting drift calculation for period pair: {reference_period} vs {test_period}")
+
                 self.calculate_semantic_drift( reference_period=reference_period, test_period=test_period, metrics=["cos_drift", "mmd_drift", "ks_drift"])
                 self.logger.info(f"Semantic drift calculated for period pair: {reference_period} vs {test_period}")
                 self.calculate_sintactic_drift(reference_period=reference_period, test_period=test_period, metrics=["js_drift", "kl_drift", "log_likelihood_drift"])
