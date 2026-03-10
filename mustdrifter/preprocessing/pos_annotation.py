@@ -32,9 +32,10 @@ def pos_tags_to_df(pos_tags, doc_id):
 PIPELINES = {}
 
 def get_pipeline(lang):
-    logger.debug(f"Getting POS pipeline for language: {lang}")
     if lang == "und":
         return None
+
+    logger.debug(f"Getting POS pipeline for language: {lang}")
     if lang not in PIPELINES:
         try:
             logger.debug(f"Downloading and initializing Stanza pipeline for language: {lang}")
