@@ -20,7 +20,7 @@ def run_mmd_permutation(
     custom_kernel,
     drift_magnitude
 ):
-    logger.debug(f"Running MMD permutation {permutation}...")
+    logger.debug(f"Running MMD permutation {permutation}.")
     rng = np.random.default_rng(seed=permutation)
     shuffled = rng.permutation(aggregated_samples)
 
@@ -139,7 +139,7 @@ def run_cos_permutation(
     test_sample_size,
     drift_magnitude
 ):
-    logger.debug(f"Running cosine permutation {permutation}...")
+    logger.debug(f"Running cosine permutation {permutation}.")
     rng = np.random.default_rng(seed=permutation)
     shuffled = rng.permutation(aggregated_samples)
 
