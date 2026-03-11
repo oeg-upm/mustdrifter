@@ -51,7 +51,8 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
     test_sample_size= len(test_sample)
     
     aggregated_samples= np.concatenate([reference_sample, test_sample])
-
+    logger.debug(f"Aggregated reference and test samples. Total size: {len(aggregated_samples)}")
+    
     bak_filename= filename.replace(".json", "_bak.json")
     logger.debug(f"Checking for backup file: {bak_filename}")
     if os.path.exists(bak_filename):
@@ -97,7 +98,7 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
         permutation_range= range(K)
     
     logger.info(f"Running {K} permutations for MMD drift significance testing with {n_jobs} parallel jobs...")
-    results = Parallel(n_jobs=n_jobs, backend="multiprocessing")(
+    results = Parallel(n_jobs=n_jobs, backend="loky")(
     delayed(run_mmd_permutation)(
             permutation,
             aggregated_samples,
@@ -204,7 +205,7 @@ def cos_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
         permutation_range = range(K)
 
     logger.info(f"Running {K} permutations for cosine drift significance testing with {n_jobs} parallel jobs...")
-    results = Parallel(n_jobs=n_jobs, backend="multiprocessing")(
+    results = Parallel(n_jobs=n_jobs, backend="loky")(
         delayed(run_cos_permutation)(
             permutation,
             aggregated_samples,
