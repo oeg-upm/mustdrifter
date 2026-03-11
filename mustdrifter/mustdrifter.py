@@ -51,30 +51,30 @@ class MuSTDrifter:
         _path= f'{self.embeddings_path}/{period_id}.npy'
         with open(_path, 'rb') as f:
             return np.load(f)
-        self.logger.info(f"Embeddings loaded from {period_id} at {_path}")
+        self.logger.debug(f"Embeddings loaded from {period_id} at {_path}")
 
     def load_pos_lexical(self, period_id):
         _path= f'{self.pos_lexical_path}/{period_id}.npy'
         with open(_path, 'rb') as f:
             return np.load(f)
-        self.logger.info(f"Lexical features loaded from {period_id} at {_path}")
+        self.logger.debug(f"Lexical features loaded from {period_id} at {_path}")
         
     def load_pos_ngram(self, period_id):
         _path= f'{self.pos_ngram_path}/{period_id}.npy'
         with open(_path, 'rb') as f:
             return np.load(f)
-        self.logger.info(f"N-gram features loaded from {period_id} at {_path}")
+        self.logger.debug(f"N-gram features loaded from {period_id} at {_path}")
         
     def load_pos_sintax(self, period_id):
         _path= f'{self.pos_sintax_path}/{period_id}.npy'
         with open(_path, 'rb') as f:
             return np.load(f)
-        self.logger.info(f"Sintax features loaded from {period_id} at {_path}")
+        self.logger.debug(f"Sintax features loaded from {period_id} at {_path}")
 
     def annotate_pos(self):
         self.logger.info("Starting POS annotation...")
         self.df, self.df_annotations = annotate_pos(self.df, f"{self.pos_annotations_path}/dataset")
-        self.logger.info(f"POS annotation completed.")
+        self.logger.info("POS annotation completed.")
     
     def load_pos_annotation(self):
         self.logger.info("Loading POS annotations...")
@@ -124,8 +124,10 @@ class MuSTDrifter:
             with open(f'{self.embeddings_path}/{period_id}.npy', 'wb') as f:
                 np.save(f, vectors)
 
-            self.logger.info(f"Embeddings saved for period {period_id} at {self.embeddings_path}/{period_id}.npy")
+            self.logger.debug(f"Embeddings saved for period {period_id} at {self.embeddings_path}/{period_id}.npy")
 
+        self.logger.info("All embeddings generated and saved.")
+        
     def generate_drift_dimensions(self):
         self.logger.info("Generating dimensions for drift detection...")
         self.annotate_pos()
@@ -168,17 +170,41 @@ class MuSTDrifter:
         drift= {}
 
         if "cos_drift" in metrics:
-            drift["cos_drift"]= cos_drift(reference_sample=reference_sample, test_sample=test_sample, filename=f"{filename}_cos.json", K=self.K, n_jobs=self.n_jobs)
+            _filename= f"{filename}_cos.json"
+            if not os.path.exists(_filename):
+                drift["cos_drift"]= cos_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename, K=self.K, n_jobs=self.n_jobs)
+            else: 
+                self.logger.info(f"Cosine drift result already exists at {_filename}. Skipping calculation.")
         if "ks_drift" in metrics:
-            drift["ks_drift"]=  ks_drift( reference_sample=reference_sample, test_sample=test_sample, filename=f"{filename}_ks.json")
+            _filename= f"{filename}_ks.json"
+            if not os.path.exists(_filename):
+                drift["ks_drift"]=  ks_drift( reference_sample=reference_sample, test_sample=test_sample, filename=_filename)
+            else:
+                self.logger.info(f"KS drift result already exists at {_filename}. Skipping calculation.")
         if "mmd_drift" in metrics:
-            drift["mmd_drift"]= mmd_drift(reference_sample=reference_sample, test_sample=test_sample, filename=f"{filename}_mmd.json", K=self.K, n_jobs=self.n_jobs)
+            _filename= f"{filename}_mmd.json"
+            if not os.path.exists(_filename):
+                drift["mmd_drift"]= mmd_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename, K=self.K, n_jobs=self.n_jobs)
+            else:
+                self.logger.info(f"MMD drift result already exists at {_filename}. Skipping calculation.")
         if "js_drift" in metrics:
-            drift["js_drift"]= js_drift(reference_sample=reference_sample, test_sample=test_sample, filename=f"{filename}_js.json")
+            _filename= f"{filename}_js.json"
+            if not os.path.exists(_filename):
+                drift["js_drift"]= js_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename)
+            else:
+                self.logger.info(f"JS drift result already exists at {_filename}. Skipping calculation.")
         if "kl_drift" in metrics:
-            drift["kl_drift"]= kl_drift(reference_sample=reference_sample, test_sample=test_sample, filename=f"{filename}_kl.json")
+            _filename= f"{filename}_kl.json"
+            if not os.path.exists(_filename):
+                drift["kl_drift"]= kl_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename)
+            else:
+                self.logger.info(f"KL drift result already exists at {_filename}. Skipping calculation.")
         if "log_drift" in metrics:
-            drift["log_drift"]= log_likelihood_drift(reference_sample=reference_sample, test_sample=test_sample, filename=f"{filename}_log.json", K=self.K, n_jobs=self.n_jobs)
+            _filename= f"{filename}_log.json"
+            if not os.path.exists(_filename):
+                drift["log_drift"]= log_likelihood_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename, K=self.K, n_jobs=self.n_jobs)
+            else:
+                self.logger.info(f"Log-likelihood drift result already exists at {_filename}. Skipping calculation.")
         return drift
 
     def calculate_all_drift(self):
@@ -194,11 +220,8 @@ class MuSTDrifter:
                 self.logger.info(f"Starting drift calculation for period pair: {reference_period} vs {test_period}")
 
                 self.calculate_semantic_drift( reference_period=reference_period, test_period=test_period, metrics=["cos_drift", "mmd_drift", "ks_drift"])
-                self.logger.info(f"Semantic drift calculated for period pair: {reference_period} vs {test_period}")
                 self.calculate_sintactic_drift(reference_period=reference_period, test_period=test_period, metrics=["js_drift", "kl_drift", "log_likelihood_drift"])
-                self.logger.info(f"Sintactic drift calculated for period pair: {reference_period} vs {test_period}")
                 self.calculate_lexical_drift(  reference_period=reference_period, test_period=test_period, metrics=["js_drift", "kl_drift", "log_likelihood_drift"])
-                self.logger.info(f"Lexical drift calculated for period pair: {reference_period} vs {test_period}")
 
         self.logger.info("Drift calculation completed for all period pairs.")
 
