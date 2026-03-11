@@ -25,7 +25,7 @@ def run_mmd_permutation(
 ):
     os.system('taskset -p 0xffffffff %d' % os.getpid())
     
-    logger.info(f"Permutation {permutation}: Running MMD permutation in PID {os.getpid()}.")
+    logger.debug(f"Permutation {permutation}: Running MMD permutation in PID {os.getpid()}.")
     rng = np.random.default_rng(seed=permutation)
     shuffled = rng.permutation(aggregated_samples)
 
@@ -155,7 +155,7 @@ def run_cos_permutation(
     # Needed for parallel processing to ensure that all CPU cores are utilized effectively
     os.system('taskset -p 0xffffffff %d' % os.getpid())
     
-    logger.info(f"Permutation {permutation}: Running cosine permutation in PID {os.getpid()}.")
+    logger.debug(f"Permutation {permutation}: Running cosine permutation in PID {os.getpid()}.")
     rng = np.random.default_rng(seed=permutation)
     shuffled = rng.permutation(aggregated_samples)
 
@@ -178,7 +178,7 @@ def run_cos_permutation(
 
 
 def cos_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
-    logger.info("Running cosine drift detection...")
+    logger.info("Running cosine drift detection.")
     reference_sample = np.asarray(reference_sample, dtype=np.float64)
     test_sample = np.asarray(test_sample, dtype=np.float64)
 

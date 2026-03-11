@@ -114,7 +114,7 @@ def run_log_likelihood_permutation(
     alpha=1e-12
 ):
     os.system('taskset -p 0xffffffff %d' % os.getpid())
-    logger.info(f"Running permutation {permutation} for log likelihood drift in PID {os.getpid()}")
+    logger.debug(f"Permutation {permutation}: Running permutation for log likelihood drift in PID {os.getpid()}")
     rng = np.random.default_rng(seed=permutation)
     shuffled = rng.permutation(aggregated_samples)
 
