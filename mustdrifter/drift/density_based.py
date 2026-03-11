@@ -113,10 +113,6 @@ def run_log_likelihood_permutation(
     test_sample_size,
     alpha=1e-12
 ):
-    # Needed for parallel processing to ensure that all CPU cores are utilized effectively
-    os.system("taskset -p 0xff %d" % os.getpid())
-
-
     logger.info(f"Running permutation {permutation} for log likelihood drift.")
     rng = np.random.default_rng(seed=permutation)
     shuffled = rng.permutation(aggregated_samples)
@@ -169,7 +165,7 @@ def log_likelihood_drift(
     )
     logger.info(f"Calculated log likelihood drift magnitude: {drift_magnitude}")
 
-    permutation_magnitudes = Parallel(n_jobs=n_jobs)(
+    permutation_magnitudes = Parallel(n_jobs=n_jobs, prefer="threads")(
         delayed(run_log_likelihood_permutation)(
             permutation,
             aggregated_samples,

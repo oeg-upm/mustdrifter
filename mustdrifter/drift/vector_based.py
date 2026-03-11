@@ -23,9 +23,6 @@ def run_mmd_permutation(
     custom_kernel,
     drift_magnitude
 ):
-    # Needed for parallel processing to ensure that all CPU cores are utilized effectively
-    os.system("taskset -p 0xff %d" % os.getpid())
-
 
     logger.info(f"Running MMD permutation {permutation}.")
     rng = np.random.default_rng(seed=permutation)
@@ -99,7 +96,7 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
         permutation_range= range(K)
     
     logger.info(f"Running {K} permutations for MMD drift significance testing with {n_jobs} parallel jobs...")
-    results = Parallel(n_jobs=n_jobs)(
+    results = Parallel(n_jobs=n_jobs, prefer="threads")(
     delayed(run_mmd_permutation)(
             permutation,
             aggregated_samples,
@@ -147,8 +144,6 @@ def run_cos_permutation(
     drift_magnitude
 ):
     # Needed for parallel processing to ensure that all CPU cores are utilized effectively
-    os.system("taskset -p 0xff %d" % os.getpid())
-
 
     logger.info(f"Running cosine permutation {permutation}.")
     rng = np.random.default_rng(seed=permutation)
@@ -207,7 +202,7 @@ def cos_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
         permutation_range = range(K)
 
     logger.info(f"Running {K} permutations for cosine drift significance testing with {n_jobs} parallel jobs...")
-    results = Parallel(n_jobs=n_jobs)(
+    results = Parallel(n_jobs=n_jobs, prefer="threads")(
         delayed(run_cos_permutation)(
             permutation,
             aggregated_samples,
