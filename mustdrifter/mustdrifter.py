@@ -132,7 +132,7 @@ class MuSTDrifter:
         self.generate_pos_distributions()
         self.generate_embeddings()
 
-    def calculate_semantic_drift(self, reference_period, test_period, metrics=["cos_drift"]):
+    def calculate_semantic_drift(self, reference_period, test_period, metrics=["cos_drift", "mmd_drift", "ks_drift"]):
         self.logger.info(f"Calculating semantic drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_embeddings(reference_period)
         test_sample= self.load_embeddings(test_period)
@@ -140,7 +140,7 @@ class MuSTDrifter:
         filename=f"{self.semantic_drift_path}/{reference_period}_{test_period}"
         return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics)
         
-    def calculate_sintactic_drift(self, reference_period, test_period, metrics=["cos_drift"]):
+    def calculate_sintactic_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"]):
         self.logger.info(f"Calculating sintactic drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_pos_sintax(reference_period)
         test_sample= self.load_pos_sintax(test_period)
@@ -148,7 +148,7 @@ class MuSTDrifter:
         filename=f"{self.sintax_drift_path}/{reference_period}_{test_period}"
         return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics)
 
-    def calculate_lexical_drift(self, reference_period, test_period, metrics=["cos_drift"]):
+    def calculate_lexical_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"]):
         self.logger.info(f"Calculating lexical drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_pos_lexical(reference_period)
         test_sample= self.load_pos_lexical(test_period)
@@ -156,7 +156,7 @@ class MuSTDrifter:
         filename=f"{self.lexical_drift_path}/{reference_period}_{test_period}"
         return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics)
 
-    def calculate_sintactic_ngram_drift(self, reference_period, test_period, metrics=["cos_drift"]):
+    def calculate_sintactic_ngram_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"]):
         self.logger.info(f"Calculating sintactic n-gram drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_pos_ngram(reference_period)
         test_sample= self.load_pos_ngram(test_period)
