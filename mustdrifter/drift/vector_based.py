@@ -25,20 +25,24 @@ def run_mmd_permutation(
 ):
     os.system('taskset -p 0xffffffff %d' % os.getpid())
     
-    logger.info(f"Running MMD permutation {permutation} in PID {os.getpid()}.")
+    logger.info(f"Permutation {permutation}: Running MMD permutation in PID {os.getpid()}.")
     rng = np.random.default_rng(seed=permutation)
     shuffled = rng.permutation(aggregated_samples)
 
+    logger.debug(f"Permutation {permutation}: Shuffled aggregated samples for MMD drift permutation test.")
     permutation_reference_sample = shuffled[:reference_sample_size]
     permutation_test_sample = shuffled[
         reference_sample_size: reference_sample_size + test_sample_size
     ]
     logger.debug(f"Permutation {permutation}: Created reference and test samples for MMD drift.")
 
+    logger.debug(f"Permutation {permutation}: Initializing MMD detector with custom RBF kernel for permutation test.")
     permutation_detector = MMD(kernel=custom_kernel)
+    logger.debug(f"Permutation {permutation}: Fitting MMD detector on reference sample for permutation test.")
     permutation_detector.fit(X=permutation_reference_sample)
     logger.debug(f"Permutation {permutation}: Fitted MMD detector on reference sample.")
     
+    logger.debug(f"Permutation {permutation}: Comparing test sample against reference sample using MMD detector for permutation test.")
     result, _ = permutation_detector.compare(X=permutation_test_sample)
     permutation_drift_magnitude = abs(result.distance)
     logger.debug(f"Permutation {permutation}: Calculated MMD drift magnitude: {permutation_drift_magnitude}")
@@ -73,6 +77,7 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
     else:
         logger.debug("No backup file found.")   
         # Compute pairwise distances and get the median
+        logger.debug("Computing pairwise distances to determine median for RBF kernel sigma.")
         pairwise_dists = pdist(aggregated_samples, metric="euclidean")
         sigma_median = np.median(pairwise_dists)
         logger.debug(f"Computed median pairwise distance for sigma: {sigma_median}")
@@ -86,9 +91,11 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
         logger.debug("Initialized MMD detector with RBF kernel using median pairwise distance as sigma.")
 
         # Fit on reference embeddings
+        logger.debug("Fitting MMD detector on reference sample.")
         detector.fit(X=reference_sample)
         logger.debug("Fitted MMD detector on reference sample.")
 
+        logger.debug("Comparing test sample against reference sample using MMD detector.")
         result, _ = detector.compare(X=test_sample)
         drift_magnitude = abs(result.distance) # Critical value during permutation test
         logger.debug(f"Calculated MMD drift magnitude: {drift_magnitude}")
@@ -148,10 +155,11 @@ def run_cos_permutation(
     # Needed for parallel processing to ensure that all CPU cores are utilized effectively
     os.system('taskset -p 0xffffffff %d' % os.getpid())
     
-    logger.info(f"Running cosine permutation {permutation} in PID {os.getpid()}.")
+    logger.info(f"Permutation {permutation}: Running cosine permutation in PID {os.getpid()}.")
     rng = np.random.default_rng(seed=permutation)
     shuffled = rng.permutation(aggregated_samples)
 
+    logger.debug(f"Permutation {permutation}: Shuffled aggregated samples for cosine drift permutation test.")
     permutation_reference_sample = shuffled[:reference_sample_size]
     permutation_test_sample = shuffled[
         reference_sample_size: reference_sample_size + test_sample_size
