@@ -166,7 +166,7 @@ def log_likelihood_drift(
     )
     logger.info(f"Calculated log likelihood drift magnitude: {drift_magnitude}")
 
-    permutation_magnitudes = Parallel(n_jobs=n_jobs, backend="loky")(
+    permutation_magnitudes = Parallel(n_jobs=n_jobs, backend="multiprocessing")(
         delayed(run_log_likelihood_permutation)(
             permutation,
             aggregated_samples,

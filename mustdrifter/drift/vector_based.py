@@ -97,7 +97,7 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
         permutation_range= range(K)
     
     logger.info(f"Running {K} permutations for MMD drift significance testing with {n_jobs} parallel jobs...")
-    results = Parallel(n_jobs=n_jobs, backend="loky")(
+    results = Parallel(n_jobs=n_jobs, backend="multiprocessing")(
     delayed(run_mmd_permutation)(
             permutation,
             aggregated_samples,
@@ -204,7 +204,7 @@ def cos_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
         permutation_range = range(K)
 
     logger.info(f"Running {K} permutations for cosine drift significance testing with {n_jobs} parallel jobs...")
-    results = Parallel(n_jobs=n_jobs, backend="loky")(
+    results = Parallel(n_jobs=n_jobs, backend="multiprocessing")(
         delayed(run_cos_permutation)(
             permutation,
             aggregated_samples,
