@@ -66,6 +66,11 @@ def run_mmd_permutation(
 
 def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
     logger.info("Running MMD drift detection.")
+    
+    with open(filename, "w") as f:
+        json.dump({}, f)
+        logger.debug(f"Initialized empty JSON file for MMD drift results: {filename}")
+
     reference_sample_size= len(reference_sample)
     test_sample_size= len(test_sample)
     
@@ -97,11 +102,11 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
             # pdist exacto
             pairwise_dists = pdist(aggregated_samples, metric="euclidean")
             sigma_median = np.median(pairwise_dists)
-
+            logger.debug(f"Computed median pairwise distance for sigma: {sigma_median}")
         else:
             # estimación por muestreo
             sigma_median = estimate_sigma_median(aggregated_samples, n_pairs=100000)
-        logger.debug(f"Computed median pairwise distance for sigma: {sigma_median}")
+            logger.debug(f"Estimated median pairwise distance for sigma using sampling: {sigma_median}")
 
         # Use the computed sigma for the RBF kernel
         custom_kernel = partial(rbf_kernel, sigma=sigma_median)
