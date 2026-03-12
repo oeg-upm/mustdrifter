@@ -94,7 +94,7 @@ def _average_log_likelihood(sample, model_distribution):
     
     logger.debug("Sample is 2D, calculating average log likelihood across all samples...")
     return float(np.mean(np.sum(sample * log_model, axis=1)))
-    
+
 def _log_likelihood_drift_magnitude(reference_sample, test_sample, alpha=1e-12):
     logger.debug("Calculating log likelihood drift magnitude...")
     reference_distribution = _mean_distribution(reference_sample)
@@ -133,7 +133,6 @@ def run_log_likelihood_permutation(
     logger.debug(f"Permutation {permutation}: Calculated log likelihood. Drift magnitude: {results}")
     
     return results 
-
 
 def log_likelihood_drift(
     reference_sample,

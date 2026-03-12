@@ -52,11 +52,10 @@ def get_pipeline(lang):
         logger.debug(f"Stanza pipeline for language {lang} initialized: {PIPELINES[lang] is not None}")
     return PIPELINES[lang]
 
-def annotate_pos(dataset, dataset_name):
-    logger.info("Starting POS annotation...")
-    
+def annotate_pos(dataset, dataset_name):   
     dataset["doc_id"]= dataset.index
     dataset["lang"]= dataset["content"].apply(detect_lang)
+    logger.debug("Language detection completed for all documents.")
     
     annotations= []
     logger.debug("Annotating POS tags for each language group...")
@@ -73,6 +72,6 @@ def annotate_pos(dataset, dataset_name):
     if dataset_name is not None:
         dataset.to_csv(f"{dataset_name}.csv", index=True)
         annotations.to_csv(f"{dataset_name}_pos.csv", index=False)
-        logger.info(f"Dataset and POS annotations saved to {dataset_name}.csv and {dataset_name}_pos.csv respectively.")
+        logger.debug(f"Dataset and POS annotations saved to {dataset_name}.csv and {dataset_name}_pos.csv respectively.")
 
     return dataset, annotations
