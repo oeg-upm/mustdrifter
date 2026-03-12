@@ -15,6 +15,21 @@ os.system("taskset -p 0xff %d" % os.getpid())
 
 ## ------ MMD drift ------ ##
 
+def estimate_sigma_median(sample, n_pairs=100000, seed=42):
+    sample = np.asarray(sample, dtype=np.float32)
+    rng = np.random.default_rng(seed)
+    n = len(sample)
+
+    idx1 = rng.integers(0, n, size=n_pairs)
+    idx2 = rng.integers(0, n, size=n_pairs)
+
+    valid = idx1 != idx2
+    idx1 = idx1[valid]
+    idx2 = idx2[valid]
+
+    dists = np.linalg.norm(sample[idx1] - sample[idx2], axis=1)
+    return float(np.median(dists))
+
 def run_mmd_permutation(
     permutation,
     aggregated_samples,
@@ -78,8 +93,14 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
         logger.debug("No backup file found.")   
         # Compute pairwise distances and get the median
         logger.debug("Computing pairwise distances to determine median for RBF kernel sigma.")
-        pairwise_dists = pdist(aggregated_samples, metric="euclidean")
-        sigma_median = np.median(pairwise_dists)
+        if len(aggregated_samples) <= 10000:
+            # pdist exacto
+            pairwise_dists = pdist(aggregated_samples, metric="euclidean")
+            sigma_median = np.median(pairwise_dists)
+
+        else:
+            # estimación por muestreo
+            sigma_median = estimate_sigma_median(aggregated_samples, n_pairs=100000)
         logger.debug(f"Computed median pairwise distance for sigma: {sigma_median}")
 
         # Use the computed sigma for the RBF kernel
