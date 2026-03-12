@@ -34,7 +34,7 @@ def js_drift(reference_sample, test_sample, filename):
     with open(filename, "w") as f:
         json.dump({"magnitude": magnitude}, f)
     
-    logger.info(f"JS drift magnitude saved to {filename}")
+    logger.info(f"JS drift magnitude ({magnitude}) saved to {filename}")
     
     return magnitude
 
@@ -70,7 +70,7 @@ def kl_drift(reference_sample, test_sample, filename, eps=1e-12):
     with open(filename, "w") as f:
         json.dump({"magnitude": magnitude}, f)
 
-    logger.info(f"KL drift magnitude saved to {filename}")
+    logger.info(f"KL drift magnitude ({magnitude}) saved to {filename}")
     return magnitude
 
 
