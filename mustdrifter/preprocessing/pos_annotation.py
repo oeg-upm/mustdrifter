@@ -58,7 +58,7 @@ def get_pipeline(lang):
 
             if not os.path.exists(model_path):
                 logger.debug(f"Downloading and initializing Stanza pipeline for language: {lang}")
-                stanza.download(lang, processors="tokenize,pos", verbose=False, model_dir=STANZA_DIR)
+                stanza.download(lang, processors="tokenize,pos", verbose=False, model_dir=str(STANZA_DIR))
                 
             PIPELINES[lang] = stanza.Pipeline(
                 lang=lang,
@@ -66,7 +66,7 @@ def get_pipeline(lang):
                 tokenize_no_ssplit=True,
                 use_gpu=True,
                 verbose=False,
-                model_dir=STANZA_DIR
+                model_dir=str(STANZA_DIR)
             )
         except Exception as e:
             logger.error(f"Error initializing Stanza pipeline for language {lang}: {e}")
