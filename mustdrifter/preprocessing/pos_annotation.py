@@ -23,6 +23,7 @@ def remove_emojis(text):
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
+
 # ---------- POS dynamic pipelines ----------
 
 def pos_tags_to_df(pos_tags, doc_id):
@@ -62,7 +63,7 @@ def get_pipeline(lang, device="cuda"):
                 
             PIPELINES[lang] = stanza.Pipeline(
                 lang=lang,
-                processors="tokenize,pos",
+                processors="tokenize,pos,lemma",
                 tokenize_no_ssplit=True,
                 device=device,
                 verbose=False,
