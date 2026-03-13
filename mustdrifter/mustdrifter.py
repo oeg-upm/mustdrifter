@@ -227,11 +227,11 @@ class MuSTDrifter:
 
         self.logger.info("Drift calculation completed for all period pairs.")
 
-    def _init_encoder(self, pretrained_model= "intfloat/multilingual-e5-large", tokenizer_max_len=512, device="cuda", batch_size=200):
+    def _init_encoder(self, pretrained_model= "intfloat/multilingual-e5-large", tokenizer_max_len=512, batch_size=200):
         self.tokenizer=  TokenGenerator(pretrained_model, tokenizer_max_len=tokenizer_max_len ,batch_size=batch_size)
         self.tokenize=   self.tokenizer.tokenize_texts
 
-        self.encoder=    EmbeddingsGenerator(pretrained_model, train_device=device, batch_size=batch_size)
+        self.encoder=    EmbeddingsGenerator(pretrained_model, train_device=self.device, batch_size=batch_size)
         self.encode=     self.encoder.generate_embeddings
 
-        self.logger.info(f"Encoder initialized with model {pretrained_model} on device {device}.")
+        self.logger.info(f"Encoder initialized with model {pretrained_model} on device {self.device}.")
