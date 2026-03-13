@@ -13,6 +13,7 @@ from pathlib import Path
 
 BASE_DIR= Path(__file__).resolve().parent
 STANZA_DIR= BASE_DIR / "stanza_models"
+os.makedirs(STANZA_DIR, exist_ok=True)
 
 def remove_emojis(text):
     if pd.isna(text):
@@ -54,6 +55,7 @@ def get_pipeline(lang):
     if lang not in PIPELINES:
         try:
             model_path = STANZA_DIR / lang
+
             if not os.path.exists(model_path):
                 logger.debug(f"Downloading and initializing Stanza pipeline for language: {lang}")
                 stanza.download(lang, processors="tokenize,pos", verbose=False, model_dir=STANZA_DIR)
