@@ -6,9 +6,13 @@ from .lang_detection import detect_lang
 
 import logging
 logger = logging.getLogger(__name__)
-
+import os
 import emoji
 import re
+from pathlib import Path
+
+BASE_DIR= Path(__file__).resolve().parent
+STANZA_DIR= BASE_DIR / "stanza_models"
 
 def remove_emojis(text):
     if pd.isna(text):
@@ -49,14 +53,18 @@ def get_pipeline(lang):
     logger.debug(f"Getting POS pipeline for language: {lang}")
     if lang not in PIPELINES:
         try:
-            logger.debug(f"Downloading and initializing Stanza pipeline for language: {lang}")
-            stanza.download(lang, processors="tokenize,pos", verbose=False)
+            model_path = STANZA_DIR / lang
+            if not os.path.exists(model_path):
+                logger.debug(f"Downloading and initializing Stanza pipeline for language: {lang}")
+                stanza.download(lang, processors="tokenize,pos", verbose=False, model_dir=STANZA_DIR)
+                
             PIPELINES[lang] = stanza.Pipeline(
                 lang=lang,
                 processors="tokenize,pos",
                 tokenize_no_ssplit=True,
                 use_gpu=True,
-                verbose=False
+                verbose=False,
+                model_dir=STANZA_DIR
             )
         except:
             PIPELINES[lang] = None
