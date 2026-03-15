@@ -99,25 +99,25 @@ class MuSTDrifter:
 
         if self.df_annotations is None:
             raise ValueError("POS annotations not found. Please run annotate_pos() first.")
-        
+
         self.df_pos_distribution=       get_pos_distribution(self.df_annotations)
         self.logger.info("POS distribution generated.")
-        
+
         self.df_pos_ngram_distribution= get_pos_ngram_distribution(self.df_annotations)
         self.logger.info("POS n-gram distribution generated.")
-        
+
         self.df_lexical_distribution=   get_lexical_distribution(self.df_annotations, self.df)
         self.logger.info("Lexical distribution generated.")
 
         export_pos_annotations(         self.df, self.df_pos_distribution,       filename_path=self.pos_sintax_path)
         self.logger.info("POS annotations exported for sintax.")
-        
+
         export_pos_annotations_relevant(self.df, self.df_pos_distribution,       filename_path=self.pos_sintax_relevant_path)
         self.logger.info("POS annotations exported for relevant sintax.")
-        
+
         export_pos_ngrams(              self.df, self.df_pos_ngram_distribution, filename_path=self.pos_ngram_path, observed_pos=None)
         self.logger.info("POS n-grams exported.")
-        
+
         export_pos_lexical(                      self.df_lexical_distribution,   filename_path=self.pos_lexical_path)
         self.logger.info("Lexical features exported.")
 
