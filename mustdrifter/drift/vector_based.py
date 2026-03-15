@@ -61,6 +61,8 @@ def run_mmd_permutation(
     permutation_drift_magnitude = abs(result.distance)
     logger.debug(f"Permutation {permutation}: Calculated MMD drift magnitude: {permutation_drift_magnitude}")
     
+    del shuffled, permutation_reference_sample, permutation_test_sample, permutation_detector, result
+    
     return int(permutation_drift_magnitude >= drift_magnitude)
 
 def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
