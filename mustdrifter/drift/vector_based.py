@@ -78,6 +78,7 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
     
     bak_filename= filename.replace(".json", "_bak.json")
     logger.debug(f"Checking for backup file: {bak_filename}")
+
     if os.path.exists(bak_filename):
         with open(bak_filename, "r") as f:
             permutation_bak= json.load(f)
@@ -143,14 +144,14 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
     )
 
     permutation_test.extend(results)
-    
+
     p_value = (1 + sum(permutation_test)) / (K + 1)
     logger.info(f"MMD drift detection completed. Drift magnitude: {drift_magnitude}, p-value: {p_value}")
-    
+
     with open(filename, "w") as f:
         json.dump({"magnitude": drift_magnitude, "p_value": p_value}, f)
     logger.info(f"MMD drift results saved to {filename}")
-    
+
     if os.path.exists(bak_filename):
         os.remove(bak_filename)
     logger.debug(f"Removed backup file: {bak_filename}")
