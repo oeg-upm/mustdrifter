@@ -165,7 +165,8 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
                 json.dump(bak_data, f)
 
             logger.debug(f"Saved backup after permutation {batch_end -1}: {bak_data}")
-        
+            gc.collect()
+
         
     # results = Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs)(
     # delayed(run_mmd_permutation)(
