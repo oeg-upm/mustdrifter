@@ -131,19 +131,49 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
         permutation_range= range(K)
     
     logger.info(f"Running {K} permutations for MMD drift significance testing with {n_jobs} parallel jobs...")
-    results = Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs)(
-    delayed(run_mmd_permutation)(
-            permutation,
-            aggregated_samples,
-            reference_sample_size,
-            test_sample_size,
-            custom_kernel,
-            drift_magnitude
+    
+    for batch_start in range(permutation_range.start, permutation_range.stop, n_jobs):
+        batch_end = min(batch_start + n_jobs, permutation_range.stop)
+        
+        results = Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs)(
+        delayed(run_mmd_permutation)(
+                permutation,
+                aggregated_samples,
+                reference_sample_size,
+                test_sample_size,
+                custom_kernel,
+                drift_magnitude
         )
-        for permutation in permutation_range
-    )
+        for permutation in range(batch_start, batch_end)
+        )
+        
+        permutation_test.extend(results)
+        
+        bak_data = {
+            "magnitude": drift_magnitude,
+            "permutation": batch_end -1,
+            "permutation_test": permutation_test
+        }
+                
+        with open(bak_filename, "w") as f:
+            json.dump(bak_data, f)
 
-    permutation_test.extend(results)
+        logger.debug(f"Saved backup after permutation {batch_end -1}: {bak_data}")
+        
+        
+    # results = Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs)(
+    # delayed(run_mmd_permutation)(
+    #         permutation,
+    #         aggregated_samples,
+    #         reference_sample_size,
+    #         test_sample_size,
+    #         custom_kernel,
+    #         drift_magnitude
+    #     )
+    #     for permutation in permutation_range
+    # )
+
+    # permutation_test.extend(results)
 
     p_value = (1 + sum(permutation_test)) / (K + 1)
     logger.info(f"MMD drift detection completed. Drift magnitude: {drift_magnitude}, p-value: {p_value}")
@@ -242,7 +272,11 @@ def cos_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
         permutation_range = range(K)
 
     logger.info(f"Running {K} permutations for cosine drift significance testing with {n_jobs} parallel jobs...")
-    results = Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs)(
+    
+    for batch_start in range(permutation_range.start, permutation_range.stop, n_jobs):
+        batch_end = min(batch_start + n_jobs, permutation_range.stop)
+        
+        results = Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs)(
         delayed(run_cos_permutation)(
             permutation,
             aggregated_samples,
@@ -250,10 +284,34 @@ def cos_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
             test_sample_size,
             drift_magnitude
         )
-        for permutation in permutation_range
-    )
+        for permutation in range(batch_start, batch_end)
+        )
+        
+        permutation_test.extend(results)
+        
+        bak_data = {
+            "magnitude": drift_magnitude,
+            "permutation": batch_end -1,
+            "permutation_test": permutation_test
+        }
+                
+        with open(bak_filename, "w") as f:
+            json.dump(bak_data, f)
+
+        logger.debug(f"Saved backup after permutation {batch_end -1}: {bak_data}")
+        
+    # results = Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs)(
+    #     delayed(run_cos_permutation)(
+    #         permutation,
+    #         aggregated_samples,
+    #         reference_sample_size,
+    #         test_sample_size,
+    #         drift_magnitude
+    #     )
+    #     for permutation in permutation_range
+    # )
     logger.debug(f"Completed permutations for cosine drift significance testing.")
-    permutation_test.extend(results)
+    # permutation_test.extend(results)
 
     p_value = (1 + sum(permutation_test)) / (K + 1)
 
