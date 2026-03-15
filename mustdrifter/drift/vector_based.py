@@ -134,33 +134,34 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
     
     logger.info(f"Running {K} permutations for MMD drift significance testing with {n_jobs} parallel jobs...")
     
-    for batch_start in range(permutation_range.start, permutation_range.stop, n_jobs):
-        batch_end = min(batch_start + n_jobs, permutation_range.stop)
-        
-        results = Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs)(
-        delayed(run_mmd_permutation)(
-                permutation,
-                aggregated_samples,
-                reference_sample_size,
-                test_sample_size,
-                custom_kernel,
-                drift_magnitude
-        )
-        for permutation in range(batch_start, batch_end)
-        )
-        
-        permutation_test.extend(results)
-        
-        bak_data = {
-            "magnitude": drift_magnitude,
-            "permutation": batch_end -1,
-            "permutation_test": permutation_test
-        }
-                
-        with open(bak_filename, "w") as f:
-            json.dump(bak_data, f)
+    with Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs) as parallel:
+        for batch_start in range(permutation_range.start, permutation_range.stop, n_jobs):
+            batch_end = min(batch_start + n_jobs, permutation_range.stop)
+            
+            results = parallel(
+            delayed(run_mmd_permutation)(
+                    permutation,
+                    aggregated_samples,
+                    reference_sample_size,
+                    test_sample_size,
+                    custom_kernel,
+                    drift_magnitude
+            )
+            for permutation in range(batch_start, batch_end)
+            )
+            
+            permutation_test.extend(results)
+            
+            bak_data = {
+                "magnitude": drift_magnitude,
+                "permutation": batch_end -1,
+                "permutation_test": permutation_test
+            }
+                    
+            with open(bak_filename, "w") as f:
+                json.dump(bak_data, f)
 
-        logger.debug(f"Saved backup after permutation {batch_end -1}: {bak_data}")
+            logger.debug(f"Saved backup after permutation {batch_end -1}: {bak_data}")
         
         
     # results = Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs)(
@@ -275,32 +276,33 @@ def cos_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
 
     logger.info(f"Running {K} permutations for cosine drift significance testing with {n_jobs} parallel jobs...")
     
-    for batch_start in range(permutation_range.start, permutation_range.stop, n_jobs):
-        batch_end = min(batch_start + n_jobs, permutation_range.stop)
-        
-        results = Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs)(
-        delayed(run_cos_permutation)(
-            permutation,
-            aggregated_samples,
-            reference_sample_size,
-            test_sample_size,
-            drift_magnitude
-        )
-        for permutation in range(batch_start, batch_end)
-        )
-        
-        permutation_test.extend(results)
-        
-        bak_data = {
-            "magnitude": drift_magnitude,
-            "permutation": batch_end -1,
-            "permutation_test": permutation_test
-        }
-                
-        with open(bak_filename, "w") as f:
-            json.dump(bak_data, f)
+    with Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs) as parallel:
+        for batch_start in range(permutation_range.start, permutation_range.stop, n_jobs):
+            batch_end = min(batch_start + n_jobs, permutation_range.stop)
+            
+            results = parallel(
+            delayed(run_cos_permutation)(
+                permutation,
+                aggregated_samples,
+                reference_sample_size,
+                test_sample_size,
+                drift_magnitude
+            )
+            for permutation in range(batch_start, batch_end)
+            )
+            
+            permutation_test.extend(results)
+            
+            bak_data = {
+                "magnitude": drift_magnitude,
+                "permutation": batch_end -1,
+                "permutation_test": permutation_test
+            }
+                    
+            with open(bak_filename, "w") as f:
+                json.dump(bak_data, f)
 
-        logger.debug(f"Saved backup after permutation {batch_end -1}: {bak_data}")
+            logger.debug(f"Saved backup after permutation {batch_end -1}: {bak_data}")
         
     # results = Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs)(
     #     delayed(run_cos_permutation)(
