@@ -21,19 +21,19 @@ def js_drift(reference_sample, test_sample, filename):
         logger.debug(f"Initialized empty JSON file for drift results: {filename}")
     reference_sample = np.asarray(reference_sample, dtype=np.float64)
     test_sample = np.asarray(test_sample, dtype=np.float64)
-    
+
     reference_distribution = reference_sample.mean(axis=0)
     test_distribution = test_sample.mean(axis=0)
-    
+
     logger.info("Computed mean distributions for reference and test samples.")
-    
+
     magnitude = float(
         jensenshannon(reference_distribution, test_distribution, base=2.0)
     )
-    
+
     with open(filename, "w") as f:
         json.dump({"magnitude": magnitude}, f)
-    
+
     logger.info(f"JS drift magnitude ({magnitude}) saved to {filename}")
     
     return magnitude
@@ -57,6 +57,7 @@ def kl_drift(reference_sample, test_sample, filename, eps=1e-12):
     with open(filename, "w") as f:
         json.dump({}, f)
         logger.debug(f"Initialized empty JSON file for drift results: {filename}")
+
     p = np.asarray(reference_sample, dtype=np.float64).mean(axis=0)
     q = np.asarray(test_sample, dtype=np.float64).mean(axis=0)
 

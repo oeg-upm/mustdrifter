@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 os.system("taskset -p 0xff %d" % os.getpid())
 
 ## ------ MMD drift ------ ##
-
 def estimate_sigma_median(sample, n_pairs=100000, seed=42):
     sample = np.asarray(sample, dtype=np.float32)
     rng = np.random.default_rng(seed)
