@@ -13,7 +13,7 @@ lid = None
 
 def _get_lid():
     global lid
-    logger.info("Loading language detection model...")
+    logger.info("Loading language detection model.")
 
     if not MODEL_PATH.exists():
         urllib.request.urlretrieve(MODEL_URL, str(MODEL_PATH))
@@ -26,7 +26,7 @@ def detect_lang(text):
     global lid
     if not isinstance(text, str) or len(text.strip()) < 5:
         return "und"
-    logger.debug(f"Detecting language for text: {text}...")  # Log the beginning of the text for context
+    logger.debug(f"Detecting language for text: {text}.")  # Log the beginning of the text for context
 
     if lid is None: lid = _get_lid()
     label, prob = lid.predict(text.replace("\n", " "), k=1)

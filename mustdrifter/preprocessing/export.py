@@ -10,16 +10,16 @@ def export_pos_annotations(df, df_pos_distribution, filename_path, observed_pos=
         df_pos_distribution= df_pos_distribution[observed_pos+["doc_id"]]
 
     df_periods2doc_id= df.groupby("period_id").groups
-    
+
     columns = [c for c in df_pos_distribution.columns if c != "period_id"]
 
     with open(f"{filename_path}/dimensions_names.json", "w", encoding="utf-8") as f:
         json.dump(columns, f, ensure_ascii=False)
-        
+
     for period_id, doc_ids in df_periods2doc_id.items():
         vectors= df_pos_distribution[df_pos_distribution["doc_id"].isin(doc_ids.tolist())].drop("doc_id", axis=1)
         vectors= vectors.to_numpy()
-        
+
         os.makedirs(filename_path, exist_ok=True)
         with open(f'{filename_path}/{period_id}.npy', 'wb') as f:
             np.save(f, vectors)

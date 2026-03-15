@@ -31,18 +31,20 @@ def pos_tags_to_df(pos_tags, doc_id):
     rows = []
     for sentence_id, sentence in enumerate(pos_tags):
         for token in sentence:
+
             rows.append({
-                "doc_id": doc_id[sentence_id],
-                "id": token.get("id"),
-                "text": token.get("text"),
-                "upos": token.get("upos"),
-                "lemma": token.get("lemma"),
-                "xpos": token.get("xpos"),
-                "feats": token.get("feats"),
+                "doc_id":     doc_id[sentence_id],
+                "id":         token.get("id"),
+                "text":       token.get("text"),
+                "upos":       token.get("upos"),
+                "lemma":      token.get("lemma"),
+                "xpos":       token.get("xpos"),
+                "feats":      token.get("feats"),
                 "start_char": token.get("start_char"),
-                "end_char": token.get("end_char"),
-                "misc": token.get("misc"),
+                "end_char":   token.get("end_char"),
+                "misc":       token.get("misc"),
             })
+
     logger.debug("POS tags converted to DataFrame successfully.")
     return pd.DataFrame(rows)
 
@@ -61,7 +63,7 @@ def get_pipeline(lang, device="cuda"):
             if not os.path.exists(model_path):
                 logger.debug(f"Downloading and initializing Stanza pipeline for language: {lang}")
                 stanza.download(lang, processors="tokenize,pos,lemma", verbose=False, model_dir=str(STANZA_DIR))
-                
+
             PIPELINES[lang] = stanza.Pipeline(
                 lang=lang,
                 processors="tokenize,pos,lemma",
@@ -70,32 +72,37 @@ def get_pipeline(lang, device="cuda"):
                 verbose=False,
                 model_dir=str(STANZA_DIR)
             )
+
         except Exception as e:
             logger.error(f"Error initializing Stanza pipeline for language {lang}: {e}")
             PIPELINES[lang] = None
+
         logger.debug(f"Stanza pipeline for language {lang} initialized: {PIPELINES[lang] is not None}")
     return PIPELINES[lang]
 
 def annotate_pos(dataset, dataset_name, device="cuda"):   
-    dataset["doc_id"]= dataset.index
-    
-    dataset["content"] = dataset["content"].astype(str).apply(remove_emojis)
+    dataset["doc_id"]=   dataset.index
+    dataset["content"]=  dataset["content"].astype(str).apply(remove_emojis)
+    dataset["lang"]=     dataset["content"].apply(detect_lang)
 
-    dataset["lang"]= dataset["content"].apply(detect_lang)
     logger.debug("Language detection completed for all documents.")
-    
+
     annotations= []
-    logger.debug("Annotating POS tags for each language group...")
+    logger.debug("Annotating POS tags for each language group.")
+
     for lang, group_lang in dataset.groupby("lang"):
         pos_tagger= get_pipeline(lang, device=device)
+
         if pos_tagger is None: continue
-        tags= pos_tagger(group_lang["content"].tolist())
-        tags_df= pos_tags_to_df(tags.to_dict(), group_lang["doc_id"].tolist() )
+
+        tags=    pos_tagger(group_lang["content"].tolist())
+        tags_df= pos_tags_to_df(tags.to_dict(), group_lang["doc_id"].tolist())
         annotations.append(tags_df)
+
         logger.debug(f"POS annotation completed for language: {lang}")
-    
+
     annotations= pd.concat(annotations)
-    
+
     if dataset_name is not None:
         dataset.to_csv(f"{dataset_name}.csv", index=True)
         annotations.to_csv(f"{dataset_name}_pos.csv", index=False)
