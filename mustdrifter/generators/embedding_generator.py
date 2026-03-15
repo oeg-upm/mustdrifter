@@ -94,7 +94,7 @@ class EmbeddingsGenerator:
         """
         end_idx = start_idx + self.batch_size
         batch_inputs_tokenized = torch.stack([_encoding.input_ids for _encoding in inputs_tokenized[start_idx:end_idx]], dim=0).to(self.device)
-        
+
         batch_inputs_attention_mask = torch.stack([_encoding.attention_mask for _encoding in inputs_tokenized[start_idx:end_idx]], dim=0).to(self.device)
 
         with torch.no_grad():

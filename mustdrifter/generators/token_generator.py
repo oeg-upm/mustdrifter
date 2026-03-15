@@ -42,7 +42,7 @@ class TokenGenerator:
         tokenizer_truncation : bool, optional (default=True)
             Whether to truncate inputs to max_length.
         """
-  
+
         self.pretrained_model= pretrained_model # pretrained model to generate embeddings
         self.batch_size = batch_size # generate embeddings in batches
         self.max_length =       tokenizer_max_len
@@ -72,7 +72,7 @@ class TokenGenerator:
             - If output is dict: A dictionary with 'input_ids' and 'attention_mask' as tensor lists.
             - If output is list: A list of namedtuples with 'input_ids' and 'attention_mask' attributes.
         """
-        
+
         if output == dict:
             all_tokenized = {'input_ids': [], 'attention_mask': []}
 
@@ -85,11 +85,11 @@ class TokenGenerator:
             # Convert lists to tensors for compatibility with model inputs
             all_tokenized['input_ids'] = torch.tensor(all_tokenized['input_ids'])
             all_tokenized['attention_mask'] = torch.tensor(all_tokenized['attention_mask'])
-            
+
             return all_tokenized
         elif output == list:
             all_tokenized = []
-        
+
             # Process batches of texts
             for start_idx in tqdm(range(0, len(texts), self.batch_size)):
                 batch_tokenized = self._process_batch(texts, start_idx)
@@ -99,7 +99,7 @@ class TokenGenerator:
                         self.Encoding(  input_ids=batch_tokenized['input_ids'][i], 
                                         attention_mask=batch_tokenized['attention_mask'][i])
                     )
-            
+
             return all_tokenized
 
 
@@ -121,7 +121,7 @@ class TokenGenerator:
         """
         end_idx = start_idx + self.batch_size
         batch_texts = texts[start_idx:end_idx]
-        
+
         # Tokenize the batch
         return self.tokenizer(
             batch_texts,
