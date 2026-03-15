@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Needed for parallel processing to ensure that all CPU cores are utilized effectively
-os.system("taskset -p 0xff %d" % os.getpid())
+# os.system("taskset -p 0xff %d" % os.getpid())
 
 ## ------ MMD drift ------ ##
 def estimate_sigma_median(sample, n_pairs=100000, seed=42):
@@ -37,7 +37,7 @@ def run_mmd_permutation(
     custom_kernel,
     drift_magnitude
 ):
-    os.system('taskset -p 0xffffffff %d' % os.getpid())
+    # os.system('taskset -p 0xffffffff %d' % os.getpid())
     
     logger.debug(f"Permutation {permutation}: Running MMD permutation in PID {os.getpid()}.")
     rng = np.random.default_rng(seed=permutation)
@@ -179,7 +179,7 @@ def run_cos_permutation(
     drift_magnitude
 ):
     # Needed for parallel processing to ensure that all CPU cores are utilized effectively
-    os.system('taskset -p 0xffffffff %d' % os.getpid())
+    # os.system('taskset -p 0xffffffff %d' % os.getpid())
     
     logger.debug(f"Permutation {permutation}: Running cosine permutation in PID {os.getpid()}.")
     rng = np.random.default_rng(seed=permutation)

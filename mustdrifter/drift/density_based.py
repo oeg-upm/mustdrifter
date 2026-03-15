@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 import os 
 # Needed for parallel processing to ensure that all CPU cores are utilized effectively
-os.system("taskset -p 0xff %d" % os.getpid())
+# os.system("taskset -p 0xff %d" % os.getpid())
 
 
 def js_drift(reference_sample, test_sample, filename):
@@ -119,7 +119,7 @@ def run_log_likelihood_permutation(
     test_sample_size,
     alpha=1e-12
 ):
-    os.system('taskset -p 0xffffffff %d' % os.getpid())
+    # os.system('taskset -p 0xffffffff %d' % os.getpid())
     logger.debug(f"Permutation {permutation}: Running permutation for log likelihood drift in PID {os.getpid()}")
     rng = np.random.default_rng(seed=permutation)
     shuffled = rng.permutation(aggregated_samples)
