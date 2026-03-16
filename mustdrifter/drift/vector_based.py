@@ -17,6 +17,13 @@ import gc
 # os.system("taskset -p 0xff %d" % os.getpid())
 
 ## ------ MMD drift ------ ##
+def build_mmd_bak_data(permutation_test, drift_magnitude, sigma_median):
+    return {
+        "magnitude": drift_magnitude,
+        "permutation_test": permutation_test,
+        "sigma_median": sigma_median
+    }
+
 def estimate_sigma_median(sample, n_pairs=100000, seed=42):
     sample = np.asarray(sample, dtype=np.float32)
     rng = np.random.default_rng(seed)
@@ -138,14 +145,9 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
         # permutation_test= []
         # permutation_range= range(K)
         permutation_test = [None] * K    
-        bak_data = {
-                "magnitude": drift_magnitude,
-                "permutation_test": permutation_test,
-                "sigma_median": sigma_median
-            }
 
         with open(bak_filename, "w") as f:
-            json.dump(bak_data, f)
+            json.dump(build_mmd_bak_data(permutation_test=permutation_test, drift_magnitude=drift_magnitude, sigma_median=sigma_median), f)
 
     pending_permutations = [i for i, v in enumerate(permutation_test) if v is None]
 
@@ -182,82 +184,91 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
     #         logger.debug(f"Saved backup after permutation {batch_end -1}: {bak_data}")
     #         gc.collect()
 
-        
-    # results = Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs)(
-    # delayed(run_mmd_permutation)(
-    #         permutation,
-    #         aggregated_samples,
-    #         reference_sample_size,
-    #         test_sample_size,
-    #         custom_kernel,
-    #         drift_magnitude
-    #     )
-    #     for permutation in permutation_range
-    # )
 
-    # permutation_test.extend(results)
+    #############################
 
+    # completed_since_save = 0
+    # pending_idx = 0
+    # with ProcessPoolExecutor(max_workers=n_jobs) as executor:
+    #     futures = {}
 
-    completed_since_save = 0
-    pending_idx = 0
-    with ProcessPoolExecutor(max_workers=n_jobs) as executor:
-        futures = {}
+    #     while pending_idx < len(pending_permutations) and len(futures) < n_jobs:
+    #         permutation = pending_permutations[pending_idx]
+    #         future = executor.submit(
+    #             run_mmd_permutation,
+    #             permutation,
+    #             aggregated_samples,
+    #             reference_sample_size,
+    #             test_sample_size,
+    #             custom_kernel,
+    #             drift_magnitude
+    #         )
+    #         futures[future] = permutation
+    #         pending_idx += 1
 
-        while pending_idx < len(pending_permutations) and len(futures) < n_jobs:
-            permutation = pending_permutations[pending_idx]
-            future = executor.submit(
-                run_mmd_permutation,
-                permutation,
-                aggregated_samples,
-                reference_sample_size,
-                test_sample_size,
-                custom_kernel,
-                drift_magnitude
-            )
-            futures[future] = permutation
-            pending_idx += 1
+    #     while futures:
+    #         done, _ = wait(futures, return_when=FIRST_COMPLETED)
 
-        while futures:
-            done, _ = wait(futures, return_when=FIRST_COMPLETED)
+    #         for future in done:
+    #             permutation = futures.pop(future)
+    #             result = future.result()
 
-            for future in done:
-                permutation = futures.pop(future)
-                result = future.result()
+    #             permutation_test[permutation] = result
+    #             completed_since_save += 1
 
-                permutation_test[permutation] = result
-                completed_since_save += 1
+    #             if pending_idx < len(pending_permutations):
+    #                 new_permutation = pending_permutations[pending_idx]
+    #                 new_future = executor.submit(
+    #                     run_mmd_permutation,
+    #                     new_permutation,
+    #                     aggregated_samples,
+    #                     reference_sample_size,
+    #                     test_sample_size,
+    #                     custom_kernel,
+    #                     drift_magnitude
+    #                 )
+    #                 futures[new_future] = new_permutation
+    #                 pending_idx += 1
 
-                if pending_idx < len(pending_permutations):
-                    new_permutation = pending_permutations[pending_idx]
-                    new_future = executor.submit(
-                        run_mmd_permutation,
-                        new_permutation,
-                        aggregated_samples,
-                        reference_sample_size,
-                        test_sample_size,
-                        custom_kernel,
-                        drift_magnitude
-                    )
-                    futures[new_future] = new_permutation
-                    pending_idx += 1
+    #         if completed_since_save >= n_jobs or not futures:
+    #             bak_data = {
+    #                 "magnitude": drift_magnitude,
+    #                 "permutation_test": permutation_test,
+    #                 "sigma_median": sigma_median
+    #             }
 
-            if completed_since_save >= n_jobs or not futures:
-                bak_data = {
-                    "magnitude": drift_magnitude,
-                    "permutation_test": permutation_test,
-                    "sigma_median": sigma_median
-                }
+    #             with open(bak_filename, "w") as f:
+    #                 json.dump(bak_data, f)
 
-                with open(bak_filename, "w") as f:
-                    json.dump(bak_data, f)
+    #             done_count = sum(v is not None for v in permutation_test)
+    #             logger.debug(f"Saved backup after {done_count}/{K} completed permutations.")
+    #             completed_since_save = 0
+    #             gc.collect()   
 
-                done_count = sum(v is not None for v in permutation_test)
-                logger.debug(f"Saved backup after {done_count}/{K} completed permutations.")
-                completed_since_save = 0
-                gc.collect()
-
-    if any(v is None for v in permutation_test):
-        raise RuntimeError("Some permutations were not completed.")
+    permutation_test = run_parallel_permutations(
+        worker_fn=run_mmd_permutation,
+        pending_items=pending_permutations,
+        results_buffer=permutation_test,
+        bak_filename=bak_filename,
+        build_bak_data_fn=build_mmd_bak_data,
+        worker_kwargs={
+            "aggregated_samples": aggregated_samples,
+            "reference_sample_size": reference_sample_size,
+            "test_sample_size": test_sample_size,
+            "custom_kernel": custom_kernel,
+            "drift_magnitude": drift_magnitude
+        },
+        build_bak_data_kwargs={
+            "drift_magnitude": drift_magnitude,
+            "sigma_median": sigma_median
+        },
+        n_jobs=n_jobs,
+        save_every=n_jobs
+    )
+    
+    missing = [i for i, v in enumerate(permutation_test) if v is None]
+    if missing:
+        raise RuntimeError(f"{len(missing)} permutations were not completed.")
     
     p_value = (1 + sum(permutation_test)) / (K + 1)
     logger.info(f"MMD drift detection completed. Drift magnitude: {drift_magnitude}, p-value: {p_value}")
@@ -274,6 +285,11 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
 
 
 ## ------ Cos drift ------ ##
+def build_cos_bak_data(results_buffer, drift_magnitude):
+    return {
+        "magnitude": drift_magnitude,
+        "permutation_test": results_buffer
+    }
 
 def median_embedding(embeddings):
     logger.debug("Calculating median embedding...")
@@ -339,7 +355,12 @@ def cos_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
         
         drift_magnitude = permutation_bak["magnitude"]
         permutation_test = permutation_bak["permutation_test"]
-        permutation_range = range(permutation_bak["permutation"] + 1, K)
+
+        if len(permutation_test) != K:
+            raise ValueError(
+                f"Backup size mismatch: expected K={K}, got {len(permutation_test)} results."
+            )
+        
         logger.debug(f"Using drift magnitude from backup: {drift_magnitude}")
 
     else:
@@ -352,58 +373,65 @@ def cos_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
         )
         logger.debug(f"Calculated cosine drift magnitude: {drift_magnitude}")
 
-        permutation_test = []
-        permutation_range = range(K)
+        permutation_test = [None] * K
 
-    bak_data = {
-            "magnitude": drift_magnitude,
-            "permutation": -1,
-            "permutation_test": permutation_test,
-        }
+        with open(bak_filename, "w") as f:
+            json.dump(build_cos_bak_data(permutation_test, drift_magnitude), f)
 
-    with open(bak_filename, "w") as f:
-        json.dump(bak_data, f)
-        
+    pending_permutations = [i for i, v in enumerate(permutation_test) if v is None]
     logger.info(f"Running {K} permutations for cosine drift significance testing with {n_jobs} parallel jobs...")
     
-    with Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs) as parallel:
-        for batch_start in range(permutation_range.start, permutation_range.stop, n_jobs):
-            batch_end = min(batch_start + n_jobs, permutation_range.stop)
+    # with Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs) as parallel:
+    #     for batch_start in range(permutation_range.start, permutation_range.stop, n_jobs):
+    #         batch_end = min(batch_start + n_jobs, permutation_range.stop)
             
-            results = parallel(
-            delayed(run_cos_permutation)(
-                permutation,
-                aggregated_samples,
-                reference_sample_size,
-                test_sample_size,
-                drift_magnitude
-            )
-            for permutation in range(batch_start, batch_end)
-            )
+    #         results = parallel(
+    #         delayed(run_cos_permutation)(
+    #             permutation,
+    #             aggregated_samples,
+    #             reference_sample_size,
+    #             test_sample_size,
+    #             drift_magnitude
+    #         )
+    #         for permutation in range(batch_start, batch_end)
+    #         )
             
-            permutation_test.extend(results)
+    #         permutation_test.extend(results)
             
-            bak_data = {
-                "magnitude": drift_magnitude,
-                "permutation": batch_end -1,
-                "permutation_test": permutation_test
-            }
+    #         bak_data = {
+    #             "magnitude": drift_magnitude,
+    #             "permutation": batch_end -1,
+    #             "permutation_test": permutation_test
+    #         }
                     
-            with open(bak_filename, "w") as f:
-                json.dump(bak_data, f)
+    #         with open(bak_filename, "w") as f:
+    #             json.dump(bak_data, f)
 
-            logger.debug(f"Saved backup after permutation {batch_end -1}: {bak_data}")
-        
-    # results = Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs)(
-    #     delayed(run_cos_permutation)(
-    #         permutation,
-    #         aggregated_samples,
-    #         reference_sample_size,
-    #         test_sample_size,
-    #         drift_magnitude
-    #     )
-    #     for permutation in permutation_range
-    # )
+    #         logger.debug(f"Saved backup after permutation {batch_end -1}: {bak_data}")
+    
+    permutation_test = run_parallel_permutations(
+        worker_fn=run_cos_permutation,
+        pending_items=pending_permutations,
+        results_buffer=permutation_test,
+        bak_filename=bak_filename,
+        build_bak_data_fn=build_cos_bak_data,
+        worker_kwargs={
+            "aggregated_samples": aggregated_samples,
+            "reference_sample_size": reference_sample_size,
+            "test_sample_size": test_sample_size,
+            "drift_magnitude": drift_magnitude
+        },
+        build_bak_data_kwargs={
+            "drift_magnitude": drift_magnitude
+        },
+        n_jobs=n_jobs,
+        save_every=n_jobs
+    )
+    
+    missing = [i for i, v in enumerate(permutation_test) if v is None]
+    if missing:
+        raise RuntimeError(f"{len(missing)} permutations were not completed.")
+    
     logger.debug(f"Completed permutations for cosine drift significance testing.")
     # permutation_test.extend(results)
 
@@ -420,3 +448,96 @@ def cos_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
     return drift_magnitude, p_value
 
 
+
+def run_parallel_permutations(
+    worker_fn,
+    pending_items,
+    results_buffer,
+    bak_filename,
+    build_bak_data_fn,
+    worker_kwargs=None,
+    build_bak_data_kwargs=None,
+    n_jobs=10,
+    save_every=None,
+):
+    """
+    Generic async parallel execution engine with immediate task replenishment.
+
+    Parameters
+    ----------
+    worker_fn : callable
+        Function with signature worker_fn(item, *worker_args).
+    pending_items : list[int]
+        Items still pending execution (e.g. permutation ids).
+    results_buffer : list
+        Preallocated buffer where each result is stored by its item index.
+        Example: [None] * K
+    bak_filename : str
+        Backup JSON filename.
+    save_callback : callable
+        Function with signature save_callback(results_buffer) -> dict
+        Used to build backup payload.
+    n_jobs : int
+        Maximum number of parallel workers.
+    save_every : int | None
+        Save every N completed tasks. If None, defaults to n_jobs.
+    *worker_args :
+        Extra positional args passed to worker_fn.
+
+    Returns
+    -------
+    list
+        Updated results_buffer.
+    """
+    if worker_kwargs is None:
+        worker_kwargs = {}
+
+    if build_bak_data_kwargs is None:
+        build_bak_data_kwargs = {}
+
+    if save_every is None:
+        save_every = n_jobs
+
+    completed_since_save = 0
+    pending_idx = 0
+
+    with ProcessPoolExecutor(max_workers=n_jobs) as executor:
+        futures = {}
+
+        while pending_idx < len(pending_items) and len(futures) < n_jobs:
+            item = pending_items[pending_idx] # e.g. permutation id
+            future = executor.submit(worker_fn, item, **worker_kwargs)
+            futures[future] = item
+            pending_idx += 1
+
+        while futures:
+            done, _ = wait(futures, return_when=FIRST_COMPLETED)
+
+            for future in done:
+                item = futures.pop(future)
+                result = future.result()
+
+                results_buffer[item] = result
+                completed_since_save += 1
+
+                if pending_idx < len(pending_items):
+                    new_item = pending_items[pending_idx]
+                    new_future = executor.submit(worker_fn, new_item, **worker_kwargs)
+                    futures[new_future] = new_item
+                    pending_idx += 1
+
+            if completed_since_save >= save_every or not futures:
+                bak_data = build_bak_data_fn(permutation_test=results_buffer, **build_bak_data_kwargs)
+
+                with open(bak_filename, "w") as f:
+                    json.dump(bak_data, f)
+                    
+                done_count = sum(v is not None for v in results_buffer)
+                total_count = len(results_buffer)
+                logger.debug(f"Saved backup after {done_count}/{total_count} completed tasks.")
+
+                completed_since_save = 0
+                gc.collect()
+    
+
+    return results_buffer
