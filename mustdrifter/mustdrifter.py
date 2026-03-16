@@ -150,37 +150,37 @@ class MuSTDrifter:
 
         if "cos_drift" in metrics:
             _filename= f"{filename}_cos.json"
-            if (rebase is True) or (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is not False) or not (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json"))):
+            if (rebase is True) or (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is None) or (not os.path.exists(_filename) and not os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is False):
                 drift["cos_drift"]= cos_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename, K=self.K, n_jobs=self.n_jobs)
             else: 
                 self.logger.info(f"Cosine drift result already exists at {_filename}. Skipping calculation.")
         if "ks_drift" in metrics:
             _filename= f"{filename}_ks.json"
-            if (rebase is True) or (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is not False) or not (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json"))):
+            if (rebase is True) or (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is None) or (not os.path.exists(_filename) and not os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is False):
                 drift["ks_drift"]=  ks_drift( reference_sample=reference_sample, test_sample=test_sample, filename=_filename)
             else:
                 self.logger.info(f"KS drift result already exists at {_filename}. Skipping calculation.")
         if "mmd_drift" in metrics:
             _filename= f"{filename}_mmd.json"
-            if (rebase is True) or (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is not False) or not (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json"))):
+            if (rebase is True) or (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is None) or (not os.path.exists(_filename) and not os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is False):
                 drift["mmd_drift"]= mmd_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename, K=self.K, n_jobs=self.n_jobs)
             else:
                 self.logger.info(f"MMD drift result already exists at {_filename}. Skipping calculation.")
         if "js_drift" in metrics:
             _filename= f"{filename}_js.json"
-            if (rebase is True) or (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is not False) or not (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json"))):
+            if (rebase is True) or (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is None) or (not os.path.exists(_filename) and not os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is False):
                 drift["js_drift"]= js_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename)
             else:
                 self.logger.info(f"JS drift result already exists at {_filename}. Skipping calculation.")
         if "kl_drift" in metrics:
             _filename= f"{filename}_kl.json"
-            if (rebase is True) or (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is not False) or not (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json"))):
+            if (rebase is True) or (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is None) or (not os.path.exists(_filename) and not os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is False):
                 drift["kl_drift"]= kl_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename)
             else:
                 self.logger.info(f"KL drift result already exists at {_filename}. Skipping calculation.")
         if "log_drift" in metrics:
             _filename= f"{filename}_log.json"
-            if (rebase is True) or (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is not False) or not (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json"))):
+            if (rebase is True) or (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is None) or (not os.path.exists(_filename) and not os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is False):
                 drift["log_drift"]= log_likelihood_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename, K=self.K, n_jobs=self.n_jobs)
             else:
                 self.logger.info(f"Log-likelihood drift result already exists at {_filename}. Skipping calculation.")
