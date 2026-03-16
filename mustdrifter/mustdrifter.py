@@ -145,48 +145,48 @@ class MuSTDrifter:
         self.generate_pos_distributions()
         self.generate_embeddings()
 
-    def calculate_drift(self, reference_sample, test_sample, filename, metrics, rebase=False):
+    def calculate_drift(self, reference_sample, test_sample, filename, metrics, rebase=None):
         drift= {}
 
         if "cos_drift" in metrics:
             _filename= f"{filename}_cos.json"
-            if not os.path.exists(_filename) or rebase or os.path.exists(_filename.replace(".json", "_bak.json")):
+            if (rebase is True) or (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is not False):
                 drift["cos_drift"]= cos_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename, K=self.K, n_jobs=self.n_jobs)
             else: 
                 self.logger.info(f"Cosine drift result already exists at {_filename}. Skipping calculation.")
         if "ks_drift" in metrics:
             _filename= f"{filename}_ks.json"
-            if not os.path.exists(_filename) or rebase or os.path.exists(_filename.replace(".json", "_bak.json")):
+            if (rebase is True) or (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is not False):
                 drift["ks_drift"]=  ks_drift( reference_sample=reference_sample, test_sample=test_sample, filename=_filename)
             else:
                 self.logger.info(f"KS drift result already exists at {_filename}. Skipping calculation.")
         if "mmd_drift" in metrics:
             _filename= f"{filename}_mmd.json"
-            if not os.path.exists(_filename) or rebase or os.path.exists(_filename.replace(".json", "_bak.json")):
+            if (rebase is True) or (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is not False):
                 drift["mmd_drift"]= mmd_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename, K=self.K, n_jobs=self.n_jobs)
             else:
                 self.logger.info(f"MMD drift result already exists at {_filename}. Skipping calculation.")
         if "js_drift" in metrics:
             _filename= f"{filename}_js.json"
-            if not os.path.exists(_filename) or rebase or os.path.exists(_filename.replace(".json", "_bak.json")):
+            if (rebase is True) or (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is not False):
                 drift["js_drift"]= js_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename)
             else:
                 self.logger.info(f"JS drift result already exists at {_filename}. Skipping calculation.")
         if "kl_drift" in metrics:
             _filename= f"{filename}_kl.json"
-            if not os.path.exists(_filename) or rebase or os.path.exists(_filename.replace(".json", "_bak.json")):
+            if (rebase is True) or (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is not False):
                 drift["kl_drift"]= kl_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename)
             else:
                 self.logger.info(f"KL drift result already exists at {_filename}. Skipping calculation.")
         if "log_drift" in metrics:
             _filename= f"{filename}_log.json"
-            if not os.path.exists(_filename) or rebase or os.path.exists(_filename.replace(".json", "_bak.json")):
+            if (rebase is True) or (os.path.exists(_filename) and os.path.exists(_filename.replace(".json", "_bak.json")) and rebase is not False):
                 drift["log_drift"]= log_likelihood_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename, K=self.K, n_jobs=self.n_jobs)
             else:
                 self.logger.info(f"Log-likelihood drift result already exists at {_filename}. Skipping calculation.")
         return drift
 
-    def calculate_semantic_drift(self, reference_period, test_period, metrics=["cos_drift", "mmd_drift", "ks_drift"], rebase=False):
+    def calculate_semantic_drift(self, reference_period, test_period, metrics=["cos_drift", "mmd_drift", "ks_drift"], rebase=None):
         self.logger.info(f"Calculating semantic drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_embeddings(reference_period)
         test_sample= self.load_embeddings(test_period)
@@ -194,7 +194,7 @@ class MuSTDrifter:
         filename=f"{self.semantic_drift_path}/{reference_period}_{test_period}"
         return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
         
-    def calculate_sintactic_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=False):
+    def calculate_sintactic_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=None):
         self.logger.info(f"Calculating sintactic drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_pos_sintax(reference_period)
         test_sample= self.load_pos_sintax(test_period)
@@ -202,7 +202,7 @@ class MuSTDrifter:
         filename=f"{self.sintax_drift_path}/{reference_period}_{test_period}"
         return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
 
-    def calculate_lexical_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=False):
+    def calculate_lexical_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=None):
         self.logger.info(f"Calculating lexical drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_pos_lexical(reference_period)
         test_sample= self.load_pos_lexical(test_period)
@@ -210,7 +210,7 @@ class MuSTDrifter:
         filename=f"{self.lexical_drift_path}/{reference_period}_{test_period}"
         return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
 
-    def calculate_sintactic_ngram_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=False):
+    def calculate_sintactic_ngram_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=None):
         self.logger.info(f"Calculating sintactic n-gram drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_pos_ngram(reference_period)
         test_sample= self.load_pos_ngram(test_period)
@@ -218,7 +218,7 @@ class MuSTDrifter:
         filename=f"{self.sintax_drift_path}/ngram_{reference_period}_{test_period}"
         return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
 
-    def calculate_all_drift(self, drift_dimensions=["semantic", "sintactic", "lexical"], metrics= None,rebase=False):
+    def calculate_all_drift(self, drift_dimensions=["semantic", "sintactic", "lexical"], metrics= None,rebase=None):
         self.logger.info("Calculating drift for all period pairs...")
 
         period_ids= self.df["period_id"].unique()
