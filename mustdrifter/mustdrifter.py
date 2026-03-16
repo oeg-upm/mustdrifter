@@ -230,7 +230,7 @@ class MuSTDrifter:
                 test_period= period_ids[e]
                 self.logger.info(f"Starting drift calculation for period pair: {reference_period} vs {test_period}")
 
-                if "semantics" in drift_dimensions:
+                if "semantic" in drift_dimensions:
                     if metrics is None:
                         _metrics= ["cos_drift", "mmd_drift", "ks_drift"]
                     else:
