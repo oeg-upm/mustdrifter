@@ -137,7 +137,6 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
         permutation_test = [None] * K    
         bak_data = {
                 "magnitude": drift_magnitude,
-                "permutation": -1,
                 "permutation_test": permutation_test,
                 "sigma_median": sigma_median
             }
