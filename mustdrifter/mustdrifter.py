@@ -32,12 +32,13 @@ class MuSTDrifter:
         self.syntactic_style_path=      f"{self.results_path}/{self.df_name}/data/syntax/style"
         self.lexical_path=              f"{self.results_path}/{self.df_name}/data/lexical"
         self.semantic_path=             f"{self.results_path}/{self.df_name}/data/semantic"
+        self.thematic_path=             f"{self.results_path}/{self.df_name}/data/thematic"
 
         self.syntax_content_drift_path= f"{self.results_path}/{self.df_name}/drift/syntax/content"
         self.syntax_style_drift_path=   f"{self.results_path}/{self.df_name}/drift/syntax/style"
         self.lexical_drift_path=        f"{self.results_path}/{self.df_name}/drift/lexical"
         self.semantic_drift_path=       f"{self.results_path}/{self.df_name}/drift/semantic"
-        self.thematic_path=             f"{self.results_path}/{self.df_name}/data/thematic"
+        self.thematic_drift_path=       f"{self.results_path}/{self.df_name}/drift/thematic"
         
         os.makedirs(self.pos_annotations_path,      exist_ok=True)
         os.makedirs(self.syntactic_content_path,    exist_ok=True)
@@ -50,6 +51,7 @@ class MuSTDrifter:
         os.makedirs(self.syntax_style_drift_path,   exist_ok=True)
         os.makedirs(self.lexical_drift_path,        exist_ok=True)
         os.makedirs(self.semantic_drift_path,       exist_ok=True)
+        os.makedirs(self.thematic_drift_path,       exist_ok=True)
 
         # self.pos_sintax_path=           f"{self.results_path}/{self.df_name}/data/sintax/all"
         # self.pos_sintax_relevant_path=  f"{self.results_path}/{self.df_name}/data/sintax/relevant"
@@ -338,9 +340,13 @@ class MuSTDrifter:
         return self._calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
 
     def calculate_thematic_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=None):
-        pass
+        self.logger.info(f"Calculating thematic drift between {reference_period} and {test_period} using metrics: {metrics}")
+        reference_sample= self.load_thematic_dimension(reference_period)
+        test_sample= self.load_thematic_dimension(test_period)
+        
+        filename=f"{self.thematic_drift_path}/{reference_period}_{test_period}"
 
-    def calculate_drift(self, drift_dimensions=["semantic", "syntactic_content", "lexical"], metrics= None,rebase=None):
+    def calculate_drift(self, drift_dimensions=["semantic", "syntactic_content", "syntactic_style", "lexical", "thematic"], metrics= None,rebase=None):
         self.logger.info("Calculating drift for all period pairs...")
 
         period_ids= self.df["period_id"].unique()
