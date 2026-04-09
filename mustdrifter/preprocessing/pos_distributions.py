@@ -273,7 +273,7 @@ def get_syntactic_style_sub_distributions(
     reference_grouped = {}
     test_grouped = {}
 
-    for idx, dimension_name in dimensions:
+    for idx, dimension_name in enumerate(dimensions):
         match = pattern.match(dimension_name)
         if not match:
             continue
