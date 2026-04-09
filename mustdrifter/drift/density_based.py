@@ -155,14 +155,6 @@ def log_likelihood_drift(
     reference_sample = np.asarray(reference_sample, dtype=np.float64)
     test_sample = np.asarray(test_sample, dtype=np.float64)
 
-    if reference_sample.ndim != 2 or test_sample.ndim != 2:
-        raise ValueError("reference_sample and test_sample must be 2D arrays.")
-
-    if reference_sample.shape[1] != test_sample.shape[1]:
-        raise ValueError("reference_sample and test_sample must have the same number of columns.")
-
-    logger.info("Validated shapes of reference and test samples.")
-
     reference_sample_size = len(reference_sample)
     test_sample_size = len(test_sample)
     aggregated_samples = np.concatenate([reference_sample, test_sample], axis=0)
