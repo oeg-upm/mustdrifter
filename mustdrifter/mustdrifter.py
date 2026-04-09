@@ -2,13 +2,12 @@ import logging
 import os
 import numpy as np
 import pandas as pd
-
+import re
 import json
 
 from .generators import TokenGenerator, EmbeddingsGenerator
-from .preprocessing import annotate_pos, get_lexical_distribution, get_syntactic_content_distribution, get_syntactic_style_distribution, get_thematic_dimension
-# from .preprocessing import get_pos_distribution, get_pos_ngram_distribution
-# from .preprocessing import export_pos_annotations, export_pos_annotations_relevant, export_pos_ngrams, export_pos_lexical
+from .preprocessing import annotate_pos
+from .preprocessing import get_lexical_distribution, get_syntactic_content_distribution, get_syntactic_style_distribution, get_syntactic_style_sub_distributions, get_thematic_dimension
 
 from .drift import cos_drift, ks_drift, mmd_drift, js_drift, kl_drift, log_likelihood_drift
 
@@ -148,40 +147,59 @@ class MuSTDrifter:
         self.logger.debug(f"Thematic dimension loaded from {_path}")
         with open(_path, 'rb') as f:
             return np.load(f)
+    
+    def load_dimension_names(self, dimension):
+        dimension_names_file= "dimensions_names.json"
+        if dimension == "syntax_content":
+            path= f"{self.syntax_content_path}/{dimension_names_file}"
+        elif dimension == "syntax_style":
+            path= f"{self.syntax_style_path}/{dimension_names_file}"
+        elif dimension == "lexical":
+            path= f"{self.lexical_path}/{dimension_names_file}"
+        elif dimension == "semantic":
+            path= f"{self.semantic_path}/{dimension_names_file}"
+        elif dimension == "thematic":
+            path= f"{self.thematic_path}/{dimension_names_file}"
+        else:
+            raise ValueError(f"Unknown dimension: {dimension}")
+
+        self.logger.debug(f"Loading dimension names for {dimension} from {path}")
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
     ###
     
     ### Generators
-    def generate_syntax_content_dimension(self):
+    def generate_syntax_content_dimension(self, **kwargs):
         self.logger.info("Generating syntactic content dimension...")
         self._require_pos_annotations()
 
-        self.syntax_content_dimension= get_syntactic_content_distribution(self.pos_annotations, self.df)
+        self.syntax_content_dimension= get_syntactic_content_distribution(self.pos_annotations, self.df, **kwargs)
         self.logger.debug("Syntactic content distribution generated.")
         
         self._export_dimension_annotations(self.syntax_content_dimension, self.syntax_content_path)
         self.logger.info("Syntactic content features exported.")
         
-    def generate_syntax_style_dimension(self):
+    def generate_syntax_style_dimension(self, **kwargs):
         self.logger.info("Generating syntactic style dimension...")
         self._require_pos_annotations()
 
-        self.syntax_style_dimension= get_syntactic_style_distribution(self.pos_annotations, self.df)
+        self.syntax_style_dimension= get_syntactic_style_distribution(self.pos_annotations, self.df, **kwargs)
         self.logger.debug("Syntactic style distribution generated.")
         
         self._export_dimension_annotations(self.syntax_style_dimension, self.syntax_style_path)
         self.logger.info("Syntactic style features exported.")
 
-    def generate_lexical_dimension(self):
+    def generate_lexical_dimension(self, **kwargs):
         self.logger.info("Generating lexical dimension...")
         self._require_pos_annotations()
         
-        self.lexical_dimension= get_lexical_distribution(self.pos_annotations, self.df)
+        self.lexical_dimension= get_lexical_distribution(self.pos_annotations, self.df, **kwargs)
         self.logger.debug("Lexical distribution generated.")
 
         self._export_dimension_annotations(self.lexical_dimension, self.lexical_path)
         self.logger.info("Lexical features exported.")
 
-    def generate_semantic_dimension(self):
+    def generate_semantic_dimension(self, **kwargs):
         self.logger.info("Generating embeddings...")
         if self.encode is None:
             self.logger.info("Encoder not initialized. Initializing now...")
@@ -199,36 +217,36 @@ class MuSTDrifter:
 
         self.logger.info("All embeddings generated and saved.")
 
-    def generate_thematic_dimension(self):
+    def generate_thematic_dimension(self, **kwargs):
         self.logger.info("Generating thematic dimension...")
-        self.thematic_dimension= get_thematic_dimension(self.df)
+        self.thematic_dimension= get_thematic_dimension(self.df, **kwargs)
         self.thematic_dimension = self.thematic_dimension.drop(columns=[-1, "-1"], errors="ignore")
         self.logger.debug("Thematic dimension generated.")
         
         self._export_dimension_annotations(self.thematic_dimension, self.thematic_path)
         self.logger.info("Thematic features exported.")
 
-    def generate_drift_dimensions(self, dimensions=["semantic", "syntactic_content", "syntactic_style", "lexical", "thematic"]):
+    def generate_drift_dimensions(self, dimensions=["semantic", "syntactic_content", "syntactic_style", "lexical", "thematic"], **kwargs):
         self.logger.info(f"Generating {dimensions} dimensions for drift detection...")
 
         if "syntactic_content" in dimensions:
-            self.generate_syntax_content_dimension()
+            self.generate_syntax_content_dimension(**kwargs)
             self.logger.debug("Syntactic content dimension generated and exported.")
 
         if "syntactic_style" in dimensions:
-            self.generate_syntax_style_dimension()
+            self.generate_syntax_style_dimension(**kwargs)
             self.logger.debug("Syntactic style dimension generated and exported.")
              
         if "lexical" in dimensions:
-            self.generate_lexical_dimension()
+            self.generate_lexical_dimension(**kwargs)
             self.logger.debug("Lexical dimension generated and exported.")
             
         if "semantic" in dimensions:
-            self.generate_semantic_dimension()
+            self.generate_semantic_dimension(**kwargs)
             self.logger.debug("Semantic dimension generated and exported.")
              
         if "thematic" in dimensions:
-            self.generate_thematic_dimension()
+            self.generate_thematic_dimension(**kwargs)
             self.logger.debug("Thematic dimension generated and exported.")
 
     ###
@@ -296,8 +314,49 @@ class MuSTDrifter:
         reference_sample= self.load_syntax_style_dimension(reference_period)
         test_sample= self.load_syntax_style_dimension(test_period)
 
-        filename=f"{self.syntax_style_drift_path}/{reference_period}_{test_period}"
-        return self._calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)  
+        dimensions= self.load_dimension_names("syntax_style")
+
+        context_distributions= get_syntactic_style_sub_distributions(reference_sample=reference_sample,
+                                                                     test_sample=test_sample,
+                                                                     dimensions=dimensions)
+        
+        metric_values = {metric: [] for metric in metrics}
+        base_path=f"{self.syntax_style_drift_path}/{reference_period}_{test_period}"
+        os.makedirs(base_path, exist_ok=True)
+        
+        for sub_distribution in context_distributions:
+            sub_distribution_context = sub_distribution["context"]
+
+            sub_distribution_context = re.sub(r"[^A-Za-z0-9_\-+]", "_", sub_distribution_context)
+
+            filename=f"{base_path}/{sub_distribution_context}"
+
+            drift_result = self._calculate_drift(
+                reference_sample=sub_distribution["reference_distribution"],
+                test_sample=sub_distribution["test_distribution"],
+                filename=filename,
+                metrics=metrics,
+                rebase=rebase,
+            )
+
+            for metric in metrics:
+                if metric in drift_result:
+                    metric_values[metric].append(drift_result[metric])
+        
+        results= {}
+        for metric, values in metric_values.items():
+            drift={
+                "magnitude": float(np.mean(values["magnitude"])) if values["magnitude"] else np.nan,
+                #"p_value": float(np.mean(values["p_value"])) if values["p_value"] else np.nan,
+            }
+            filename= f"{base_path}_{metric.replace('_drift', '')}.json"
+            with open(filename, "w") as f:
+                json.dump(drift, f)
+            results[metric]= drift
+        
+        return results
+
+        # return self._calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)  
 
     def calculate_lexical_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=None):
         self.logger.info(f"Calculating lexical drift between {reference_period} and {test_period} using metrics: {metrics}")

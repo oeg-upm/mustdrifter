@@ -1,106 +1,9 @@
 import pandas as pd
 import numpy as np
-from bertopic import BERTopic
-
-
-
 from itertools import permutations
+import re
 import logging
 logger = logging.getLogger(__name__)
-
-
-def get_pos_distribution(df_annotations):
-    logger.debug("Calculating POS distribution...")
-    pos_dist = (
-        df_annotations.groupby(["doc_id", "upos"])
-          .size()
-          .unstack(fill_value=0)
-          .pipe(lambda df: df.div(df.sum(axis=1), axis=0))
-          .reset_index()
-    )
-
-    pos_dist.columns.name = None
-    cols = ["doc_id"] + sorted(c for c in pos_dist.columns if c != "doc_id")
-    pos_dist = pos_dist[cols]
-    logger.debug("POS distribution calculated successfully.")
-
-    return pos_dist
-
-def get_pos_ngram_distribution(df, n_min=2, n_max=4):
-    logger.debug(f"Calculating POS n-gram distribution for n={n_min} to n={n_max}...")
-    rows = []
-
-    for doc_id, g in df.groupby("doc_id", sort=False):
-        g["id"] = pd.to_numeric(g["id"], errors="coerce")
-        g= g.sort_values("id")
-        tokens = g["upos"].dropna().astype(str).tolist()
-
-        for n in range(n_min, n_max + 1):
-            if len(tokens) < n:
-                continue
-
-            ngrams = zip(*[tokens[i:] for i in range(n)])
-
-            for ng in ngrams:
-                rows.append((doc_id, "+".join(ng)))
-
-        logger.debug(f"Processed doc_id {doc_id} with {len(tokens)} tokens for POS n-grams.")
-
-    df_ngrams = pd.DataFrame(rows, columns=["doc_id", "ngram"])
-
-    matrix = (
-        df_ngrams
-        .value_counts(["doc_id", "ngram"])
-        .unstack(fill_value=0)
-        .sort_index()
-    )
-
-    matrix["doc_id"]= matrix.index
-    matrix.index.name = None
-    matrix.columns.name = None
-    logger.info("POS n-gram distribution calculated successfully.")
-    return matrix
-
-def get_lexical_distribution(df_annotations, docs_df, allowed_upos=["NOUN", "VERB", "ADV", "ADJ"]):
-    lexical_column= "lemma" # can be changed to "text" if we want to use the original word forms instead of lemmas
-
-    logger.debug("Calculating lexical distribution...")
-    df = df_annotations.merge(
-        docs_df[["doc_id", "period_id"]],
-        on="doc_id",
-        how="left"
-    )
-
-    df = df[df["upos"].isin(allowed_upos)].copy()
-    df[lexical_column] = df[lexical_column].astype(str)
-    logger.debug(f"Filtered annotations to allowed UPOS tags: {allowed_upos}. Remaining rows: {len(df)}.")
-
-    vocabulary = np.sort(df[lexical_column].dropna().unique())
-
-    counts = (
-        df.groupby(["period_id", lexical_column], observed=True)
-        .size()
-        .reset_index(name="freq")
-    )
-    logger.debug("Counted occurrences of each word per period_id.")
-
-    lexical_dist = (
-        counts
-        .pivot(index="period_id", columns=lexical_column, values="freq")
-        .reindex(columns=vocabulary, fill_value=0)
-        .fillna(0)
-        .sort_index()
-        .pipe(lambda x: x.div(x.sum(axis=1), axis=0))
-        .reset_index()
-    )
-    logger.debug("Calculated lexical distribution and normalized by row sums.")
-
-    lexical_dist.columns.name = None
-    cols = ["period_id"] + sorted(c for c in lexical_dist.columns if c != "period_id")
-    lexical_dist = lexical_dist[cols]
-    logger.debug("Reordered columns in lexical distribution DataFrame.")
-
-    return lexical_dist
 
 
 def _rule_exists_in_document(
@@ -123,11 +26,12 @@ def _rule_exists_in_document(
             return 0
 
     return 1
-    
+
 def get_syntactic_content_distribution(
-    df_annotations,
+    pos_annotations,
     docs_df,
-    allowed_upos=["NOUN", "PRON", "VERB", "ADV", "ADJ", "DET"]
+    allowed_upos=["NOUN", "PRON", "VERB", "ADV", "ADJ", "DET"],
+    **kwargs
 ):
     """
     Compute the probability distribution of syntactic content rules by period.
@@ -138,8 +42,8 @@ def get_syntactic_content_distribution(
 
     Parameters
     ----------
-    df_annotations : pd.DataFrame
-        DataFrame with at least:
+    pos_annotations : pd.DataFrame
+        DataFrame of Stanza POS annotations with at least:
         - doc_id
         - id
         - upos
@@ -163,7 +67,7 @@ def get_syntactic_content_distribution(
     """
     logger.debug("Calculating syntactic content dimension...")
 
-    df = df_annotations.merge(
+    df = pos_annotations.merge(
         docs_df[["doc_id", "period_id"]],
         on="doc_id",
         how="left"
@@ -188,8 +92,8 @@ def get_syntactic_content_distribution(
     doc_pos = df.groupby("doc_id")["upos"].apply(list)
     target_tag_set = set(allowed_upos)
 
-
-
+    logger.debug("Built document-level UPOS sequences and period mapping.")
+    
     rows = []
 
     for doc_id, pos_seq in doc_pos.items():
@@ -217,7 +121,8 @@ def get_syntactic_content_distribution(
         .groupby("period_id", as_index=False)
         .sum()
     )
-
+    logger.debug("Calculated document-level rule presence and aggregated counts by period.")
+    
     rule_totals = df_period_counts[rules].sum(axis=1)
 
     df_period_probs = df_period_counts.copy()
@@ -231,48 +136,39 @@ def get_syntactic_content_distribution(
 
     return df_period_probs
 
-
-def _rule_exists_contiguous(pos_sequence, rule_tags):
-    """
-    Check if rule_tags appears as a contiguous subsequence.
-    """
-    n = len(rule_tags)
-    L = len(pos_sequence)
-
-    for i in range(L - n + 1):
-        if tuple(pos_sequence[i:i+n]) == rule_tags:
-            return 1
-
-    return 0
-
-
 def get_syntactic_style_distribution(
-    df_annotations,
+    pos_annotations,
     docs_df,
-    allowed_upos=["NOUN", "PRON", "VERB", "ADV", "ADJ", "DET"]
+    context_size=4,
+    min_count=4,
+    **kwargs
 ):
-    logger.debug("Calculating syntactic style dimension...")
+    """
+    Compute conditional probabilities of UPOS tags:
+        P(next_upos | previous `context_size` UPOS tags)
 
-    df = df_annotations.merge(
+    Contexts with fewer than `min_count` global occurrences
+    are removed.
+
+    Returns
+    -------
+    pd.DataFrame
+        Wide-format DataFrame with:
+        - one row per period_id
+        - one column per conditional probability P(next_upos|context)
+    """
+    df = pos_annotations.merge(
         docs_df[["doc_id", "period_id"]],
         on="doc_id",
-        how="left"
+        how="left",
     )
 
-    df = df[df["upos"].isin(allowed_upos)].copy()
-    logger.debug(
-        f"Filtered annotations to allowed UPOS tags: {allowed_upos}. Remaining rows: {len(df)}."
-    )
+    df = df[df["upos"].notna()].copy()
 
     if df.empty:
-        logger.debug("No rows remaining after filtering. Returning empty DataFrame.")
         return pd.DataFrame(columns=["period_id"])
 
     df = df.sort_values(["doc_id", "id"])
-    logger.debug("Sorted annotations by doc_id and id.")
-
-    rules = np.sort(["+".join(rule) for rule in permutations(allowed_upos)])
-    logger.debug(f"Generated {len(rules)} syntactic style rules.")
 
     doc_period = (
         df[["doc_id", "period_id"]]
@@ -281,99 +177,202 @@ def get_syntactic_style_distribution(
     )
 
     doc_pos = df.groupby("doc_id", observed=True)["upos"].apply(list)
-    logger.debug("Built UPOS sequences for each doc_id.")
-
-    rules_split = {rule: tuple(rule.split("+")) for rule in rules}
-
 
     rows = []
 
     for doc_id, pos_seq in doc_pos.items():
-        row = {
-            "doc_id": doc_id,
-            "period_id": doc_period.loc[doc_id]
-        }
-
-        if len(pos_seq) < len(allowed_upos):
-            for rule in rules:
-                row[rule] = 0
-            rows.append(row)
+        if len(pos_seq) <= context_size:
             continue
 
-        for rule, rule_tags in rules_split.items():
-            row[rule] = _rule_exists_contiguous(pos_seq, rule_tags)
+        period_id = doc_period.loc[doc_id]
 
-        rows.append(row)
+        for i in range(context_size, len(pos_seq)):
+            context = "+".join(pos_seq[i - context_size:i])
+            next_upos = pos_seq[i]
 
-    logger.debug("Built document-level contiguous rule matrix.")
+            rows.append(
+                {
+                    "period_id": period_id,
+                    "context": context,
+                    "next_upos": next_upos,
+                }
+            )
 
-    doc_rule_df = pd.DataFrame(rows)
+    if not rows:
+        return pd.DataFrame(columns=["period_id"])
 
-    syntactic_style_dist = (
-        doc_rule_df
-        .drop(columns=["doc_id"])
-        .groupby("period_id", observed=True)
+    df_transitions = pd.DataFrame(rows)
+
+    global_context_counts = (
+        df_transitions
+        .groupby("context", observed=True)
+        .size()
+        .reset_index(name="global_context_count")
+    )
+
+    valid_contexts = global_context_counts.loc[
+        global_context_counts["global_context_count"] >= min_count,
+        "context",
+    ]
+
+    df_transitions = df_transitions[
+        df_transitions["context"].isin(valid_contexts)
+    ].copy()
+
+    if df_transitions.empty:
+        return pd.DataFrame(columns=["period_id"])
+
+    counts = (
+        df_transitions
+        .groupby(["period_id", "context", "next_upos"], observed=True)
+        .size()
+        .reset_index(name="upos_count")
+    )
+
+    context_counts = (
+        counts
+        .groupby(["period_id", "context"], observed=True)["upos_count"]
         .sum()
-        .reindex(columns=rules, fill_value=0)
-        .fillna(0)
-        .sort_index()
-        .pipe(lambda x: x.div(x.sum(axis=1), axis=0))
-        .fillna(0.0)
+        .reset_index(name="context_count")
+    )
+
+    result = counts.merge(
+        context_counts,
+        on=["period_id", "context"],
+        how="left",
+    )
+
+    result["probability"] = result["upos_count"] / result["context_count"]
+    result["dimension"] = "P(" + result["next_upos"] + "|" + result["context"] + ")"
+
+    wide_df = (
+        result.pivot_table(
+            index="period_id",
+            columns="dimension",
+            values="probability",
+            fill_value=0.0,
+        )
         .reset_index()
     )
 
-    logger.debug("Calculated syntactic style distribution and normalized by row sums.")
+    wide_df.columns.name = None
 
-    syntactic_style_dist.columns.name = None
-    cols = ["period_id"] + sorted(c for c in syntactic_style_dist.columns if c != "period_id")
-    syntactic_style_dist = syntactic_style_dist[cols]
+    cols = ["period_id"] + sorted(c for c in wide_df.columns if c != "period_id")
+    wide_df = wide_df[cols]
 
-    logger.debug("Reordered columns in syntactic style DataFrame.")
+    return wide_df
 
-    return syntactic_style_dist
+def get_syntactic_style_sub_distributions(
+    reference_sample,
+    test_sample,
+    dimensions,
+    shared_contexts_only=False,
+):
+    pattern = re.compile(r"^P\((.+)\|(.+)\)$")
 
+    reference_grouped = {}
+    test_grouped = {}
 
-def get_thematic_dimension(
-    docs_df,
-    nr_topics=30,
-    embedding_model="intfloat/multilingual-e5-large"
-    ):
+    for idx, dimension_name in dimensions.items():
+        match = pattern.match(dimension_name)
+        if not match:
+            continue
 
-    df = docs_df.copy()
-    df["content"] = df["content"].fillna("").astype(str).str.strip()
+        next_upos = match.group(1)
+        context = match.group(2)
 
-    docs = df["content"].tolist()
+        if context not in reference_grouped:
+            reference_grouped[context] = {}
+        if context not in test_grouped:
+            test_grouped[context] = {}
 
-    topic_model = BERTopic(
-        embedding_model=embedding_model,
-        nr_topics=nr_topics,
-        verbose=True
+        reference_grouped[context][next_upos] = float(reference_sample[int(idx)])
+        test_grouped[context][next_upos] = float(test_sample[int(idx)])
+
+    if shared_contexts_only:
+        contexts = sorted(set(reference_grouped).intersection(set(test_grouped)))
+    else:
+        contexts = sorted(set(reference_grouped).union(set(test_grouped)))
+
+    distributions = []
+
+    for context in contexts:
+        reference_context = reference_grouped.get(context, {})
+        test_context = test_grouped.get(context, {})
+
+        labels = sorted(set(reference_context).union(set(test_context)))
+
+        reference_distribution = np.array(
+            [reference_context.get(label, 0.0) for label in labels],
+            dtype=np.float64,
+        )
+        test_distribution = np.array(
+            [test_context.get(label, 0.0) for label in labels],
+            dtype=np.float64,
+        )
+
+        reference_sum = reference_distribution.sum()
+        test_sum = test_distribution.sum()
+
+        if reference_sum > 0.0:
+            reference_distribution = reference_distribution / reference_sum
+
+        if test_sum > 0.0:
+            test_distribution = test_distribution / test_sum
+
+        distributions.append(
+            {
+                "context": context,
+                "labels": labels,
+                "reference_distribution": reference_distribution,
+                "test_distribution": test_distribution,
+            }
+        )
+
+    return distributions
+
+def get_lexical_distribution(
+    pos_annotations, 
+    docs_df, 
+    allowed_upos=["NOUN", "VERB", "ADV", "ADJ"],
+    **kwargs
+):
+    lexical_column= "lemma" # can be changed to "text" if we want to use the original word forms instead of lemmas
+
+    logger.debug("Calculating lexical distribution...")
+    df = pos_annotations.merge(
+        docs_df[["doc_id", "period_id"]],
+        on="doc_id",
+        how="left"
     )
 
-    topics, _ = topic_model.fit_transform(docs)
-    df["topic"] = topics
+    df = df[df["upos"].isin(allowed_upos)].copy()
+    df[lexical_column] = df[lexical_column].astype(str)
+    logger.debug(f"Filtered annotations to allowed UPOS tags: {allowed_upos}. Initial size: {len(pos_annotations)}. Remaining rows: {len(df)}.")
 
-    topic_counts = (
-        df.groupby(["period_id", "topic"], observed=True)
+    vocabulary = np.sort(df[lexical_column].dropna().unique())
+
+    counts = (
+        df.groupby(["period_id", lexical_column], observed=True)
         .size()
         .reset_index(name="freq")
     )
+    logger.debug("Counted occurrences of each word per period_id.")
 
-    topic_vocabulary = sorted(topic_counts["topic"].unique())
-
-    thematic_dist = (
-        topic_counts
-        .pivot(index="period_id", columns="topic", values="freq")
-        .reindex(columns=topic_vocabulary, fill_value=0)
+    lexical_dist = (
+        counts
+        .pivot(index="period_id", columns=lexical_column, values="freq")
+        .reindex(columns=vocabulary, fill_value=0)
         .fillna(0)
         .sort_index()
         .pipe(lambda x: x.div(x.sum(axis=1), axis=0))
         .reset_index()
     )
+    logger.debug("Calculated lexical distribution and normalized by row sums.")
 
-    thematic_dist.columns.name = None
-    cols = ["period_id"] + sorted(c for c in thematic_dist.columns if c != "period_id")
-    thematic_dist = thematic_dist[cols]
+    lexical_dist.columns.name = None
+    cols = ["period_id"] + sorted(c for c in lexical_dist.columns if c != "period_id")
+    lexical_dist = lexical_dist[cols]
+    logger.debug("Reordered columns in lexical distribution DataFrame.")
 
-
-    return thematic_dist
+    return lexical_dist
