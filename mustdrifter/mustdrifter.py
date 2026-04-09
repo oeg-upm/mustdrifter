@@ -23,7 +23,7 @@ class MuSTDrifter:
         self.encode= None
 
         self.device= device
-        
+
         self.n_jobs= n_jobs
         self.K= K
 
@@ -100,7 +100,9 @@ class MuSTDrifter:
                     self.logger.error("Failed to annotate POS. Cannot generate lexical dimension.")
                     raise ValueError("POS annotations error.")
         return True
+    ###
     
+    ### Exporter
     def _export_dimension_annotations(self, df, filename_path):
         columns = [c for c in df.columns if c != "period_id"]
 
@@ -115,7 +117,7 @@ class MuSTDrifter:
             with open(f'{filename_path}/{period_id}.npy', 'wb') as f:
                 np.save(f, vector)
     ###
-    
+
     ### Loaders   
     def load_syntax_content_dimension(self, period_id):
         _path= f'{self.syntax_content_path}/{period_id}.npy'
