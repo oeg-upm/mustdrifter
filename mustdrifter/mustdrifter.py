@@ -212,23 +212,18 @@ class MuSTDrifter:
         self.logger.info(f"Generating {dimensions} dimensions for drift detection...")
 
         if "syntactic_content" in dimensions:
-            self.logger.debug("Generating syntactic content dimension...")
             self.generate_syntax_content_dimension()
              
         if "syntactic_style" in dimensions:
-            self.logger.debug("Generating syntactic style dimension...")
             self.generate_syntax_style_dimension()
              
         if "lexical" in dimensions:
-            self.logger.debug("Generating lexical dimension...")
             self.generate_lexical_dimension()
             
         if "semantic" in dimensions:
-            self.logger.debug("Generating semantic dimension...")
             self.generate_semantic_dimension()
              
         if "thematic" in dimensions:
-            self.logger.debug("Generating thematic dimension...")
             self.generate_thematic_dimension()
 
     ###
