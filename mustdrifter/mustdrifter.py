@@ -213,18 +213,23 @@ class MuSTDrifter:
 
         if "syntactic_content" in dimensions:
             self.generate_syntax_content_dimension()
-             
+            self.logger.debug("Syntactic content dimension generated and exported.")
+
         if "syntactic_style" in dimensions:
             self.generate_syntax_style_dimension()
+            self.logger.debug("Syntactic style dimension generated and exported.")
              
         if "lexical" in dimensions:
             self.generate_lexical_dimension()
+            self.logger.debug("Lexical dimension generated and exported.")
             
         if "semantic" in dimensions:
             self.generate_semantic_dimension()
+            self.logger.debug("Semantic dimension generated and exported.")
              
         if "thematic" in dimensions:
             self.generate_thematic_dimension()
+            self.logger.debug("Thematic dimension generated and exported.")
 
     ###
 
