@@ -344,6 +344,9 @@ class MuSTDrifter:
         
         results= {}
         for metric, values in metric_values.items():
+            print(metric_values)
+            print(values)
+            
             drift={
                 "magnitude":        float(np.mean(values[metric])) if values[metric] else np.nan,
                 "magnitude_min":    float(np.min(values[metric])) if values[metric] else np.nan,

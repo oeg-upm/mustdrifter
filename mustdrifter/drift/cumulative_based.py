@@ -33,11 +33,12 @@ def ks_drift(reference_sample, test_sample, filename):
         
     logger.info("KS drift detection completed.")
 
+    result= {"magnitude": np.median(statistics), "p_value": np.median(p_values), 
+                "p_value_median": np.median(p_values), "p_value_mean": np.mean(p_values),
+                "p_value_min": np.min(p_values), "p_value_max": np.max(p_values)}
     with open(filename, "w") as f:
-        json.dump({"magnitude": np.median(statistics), "p_value": np.median(p_values), 
-                   "p_value_median": np.median(p_values), "p_value_mean": np.mean(p_values),
-                   "p_value_min": np.min(p_values), "p_value_max": np.max(p_values)}, f)
+        json.dump(result, f)
 
     logger.info(f"KS drift results saved to {filename}")
 
-    return np.median(statistics), np.median(p_values)
+    return result

@@ -181,15 +181,16 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
     p_value = (1 + sum(permutation_test)) / (K + 1)
     logger.info(f"MMD drift detection completed. Drift magnitude: {drift_magnitude}, p-value: {p_value}")
 
+    result= {"magnitude": drift_magnitude, "p_value": p_value}
     with open(filename, "w") as f:
-        json.dump({"magnitude": drift_magnitude, "p_value": p_value}, f)
+        json.dump(result, f)
     logger.info(f"MMD drift results saved to {filename}")
 
     if os.path.exists(bak_filename):
         os.remove(bak_filename)
     logger.debug(f"Removed backup file: {bak_filename}")
 
-    return drift_magnitude,p_value
+    return result
 
 
 ## ------ Cos drift ------ ##
@@ -315,15 +316,16 @@ def cos_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
 
     p_value = (1 + sum(permutation_test)) / (K + 1)
 
+    result = {"magnitude": drift_magnitude, "p_value": p_value}
     with open(filename, "w") as f:
-        json.dump({"magnitude": drift_magnitude, "p_value": p_value}, f)
+        json.dump(result, f)
     logger.info(f"Cosine drift results saved to {filename}")
     
     if os.path.exists(bak_filename):
         os.remove(bak_filename)
     logger.debug(f"Removed backup file: {bak_filename}")
     
-    return drift_magnitude, p_value
+    return result
 
 
 
