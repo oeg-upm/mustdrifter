@@ -362,7 +362,8 @@ class MuSTDrifter:
                     metric_values[metric].append(float(magnitude))
 
         results= {}
-        for metric, values in metric_values.items():            
+        for metric, values in metric_values.items():
+            self.logger.info(f"Aggregating results for metric {metric} with {len(values)} valid sub-distributions. Values: {value.items()}") 
             drift={
                 "magnitude":        float(np.mean(values[metric])) if values[metric] else np.nan,
                 "magnitude_min":    float(np.min(values[metric])) if values[metric] else np.nan,
