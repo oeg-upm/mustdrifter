@@ -377,9 +377,10 @@ class MuSTDrifter:
         reference_sample= self.load_syntax_style_dimension(reference_period)
         test_sample= self.load_syntax_style_dimension(test_period)
         
+        base_path= f"{self.syntax_style_drift_path}/{reference_period}_{test_period}"
         metric_values = {}
         for metric in metrics:
-            filename= f"{self.syntax_style_drift_path}/{reference_period}_{test_period}_{metric.replace('_drift', '')}.json"
+            filename= f"{base_path}_{metric.replace('_drift', '')}.json"
             if ((not os.path.exists(filename)) or 
                 (rebase is True)
             ):
