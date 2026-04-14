@@ -365,7 +365,7 @@ class MuSTDrifter:
         return self._calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
         
     def calculate_syntactic_content_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=None):
-        self.logger.info(f"Calculating syntactic drift between {reference_period} and {test_period} using metrics: {metrics}")
+        self.logger.info(f"Calculating syntactic content drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_syntax_content_dimension(reference_period)
         test_sample= self.load_syntax_content_dimension(test_period)
 
@@ -373,7 +373,7 @@ class MuSTDrifter:
         return self._calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
 
     def calculate_syntactic_style_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=None):
-        self.logger.info(f"Calculating syntactic drift between {reference_period} and {test_period} using metrics: {metrics}")
+        self.logger.info(f"Calculating syntactic style drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_syntax_style_dimension(reference_period)
         test_sample= self.load_syntax_style_dimension(test_period)
         
