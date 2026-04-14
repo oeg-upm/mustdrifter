@@ -117,7 +117,7 @@ class MuSTDrifter:
                 np.save(f, vector)
     ###
 
-    ### Loaders   
+    ### Dimension Loaders   
     def load_syntax_content_dimension(self, period_id):
         _path= f'{self.syntax_content_path}/{period_id}.npy'
         self.logger.debug(f"Syntax content dimension loaded from {_path}")
@@ -165,6 +165,39 @@ class MuSTDrifter:
 
         self.logger.debug(f"Loading dimension names for {dimension} from {path}")
         with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    ###
+    
+    ### Drift Loaders
+    
+    def load_syntax_content_drift(self, reference_period, test_period):
+        _path = f"{self.syntax_content_drift_path}/{reference_period}__{test_period}.json"
+        self.logger.debug(f"Syntax content drift loaded from {_path}")
+        with open(_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def load_syntax_style_drift(self, reference_period, test_period):
+        _path = f"{self.syntax_style_drift_path}/{reference_period}__{test_period}.json"
+        self.logger.debug(f"Syntax style drift loaded from {_path}")
+        with open(_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def load_lexical_drift(self, reference_period, test_period):
+        _path = f"{self.lexical_drift_path}/{reference_period}__{test_period}.json"
+        self.logger.debug(f"Lexical drift loaded from {_path}")
+        with open(_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def load_semantic_drift(self, reference_period, test_period):
+        _path = f"{self.semantic_drift_path}/{reference_period}__{test_period}.json"
+        self.logger.debug(f"Semantic drift loaded from {_path}")
+        with open(_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def load_thematic_drift(self, reference_period, test_period):
+        _path = f"{self.thematic_drift_path}/{reference_period}__{test_period}.json"
+        self.logger.debug(f"Thematic drift loaded from {_path}")
+        with open(_path, "r", encoding="utf-8") as f:
             return json.load(f)
     ###
     
