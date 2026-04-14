@@ -357,7 +357,7 @@ class MuSTDrifter:
         return drift
 
     def calculate_semantic_drift(self, reference_period, test_period, metrics=["cos_drift", "mmd_drift", "ks_drift"], rebase=None):
-        self.logger.info(f"Calculating semantic drift between {reference_period} and {test_period} using metrics: {metrics}")
+        self.logger.debug(f"Calculating semantic drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_semantic_dimension(reference_period)
         test_sample= self.load_semantic_dimension(test_period)
 
@@ -365,7 +365,7 @@ class MuSTDrifter:
         return self._calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
         
     def calculate_syntactic_content_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=None):
-        self.logger.info(f"Calculating syntactic content drift between {reference_period} and {test_period} using metrics: {metrics}")
+        self.logger.debug(f"Calculating syntactic content drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_syntax_content_dimension(reference_period)
         test_sample= self.load_syntax_content_dimension(test_period)
 
@@ -373,7 +373,7 @@ class MuSTDrifter:
         return self._calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
 
     def calculate_syntactic_style_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=None):
-        self.logger.info(f"Calculating syntactic style drift between {reference_period} and {test_period} using metrics: {metrics}")
+        self.logger.debug(f"Calculating syntactic style drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_syntax_style_dimension(reference_period)
         test_sample= self.load_syntax_style_dimension(test_period)
         
@@ -450,7 +450,7 @@ class MuSTDrifter:
         # return self._calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)  
 
     def calculate_lexical_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=None):
-        self.logger.info(f"Calculating lexical drift between {reference_period} and {test_period} using metrics: {metrics}")
+        self.logger.debug(f"Calculating lexical drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_lexical_dimension(reference_period)
         test_sample= self.load_lexical_dimension(test_period)
 
@@ -458,7 +458,7 @@ class MuSTDrifter:
         return self._calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
 
     def calculate_thematic_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=None):
-        self.logger.info(f"Calculating thematic drift between {reference_period} and {test_period} using metrics: {metrics}")
+        self.logger.debug(f"Calculating thematic drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_thematic_dimension(reference_period)
         test_sample= self.load_thematic_dimension(test_period)
         
@@ -475,7 +475,7 @@ class MuSTDrifter:
                 if i == e: continue
                 reference_period= period_ids[i]
                 test_period= period_ids[e]
-                self.logger.debug(f"Starting drift calculation for period pair: {reference_period} vs {test_period}")
+                self.logger.info(f"Starting drift calculation for period pair: {reference_period} vs {test_period}")
 
                 if "semantic" in drift_dimensions:
                     if metrics is None:
