@@ -80,10 +80,10 @@ class MuSTDrifter:
         self.logger.info("POS annotation completed.")
     
     def _load_pos_annotation(self):
-        self.logger.info("Loading POS annotations...")
+        self.logger.debug("Loading POS annotations...")
         self.df = pd.read_csv(f"{self.pos_annotations_path}/dataset.csv", index_col="Unnamed: 0")
         self.pos_annotations= pd.read_csv(f"{self.pos_annotations_path}/dataset_pos.csv")
-        self.logger.info("POS annotations loaded.")
+        self.logger.debug("POS annotations loaded.")
         return self.df, self.pos_annotations
 
     def _require_pos_annotations(self):
@@ -235,7 +235,7 @@ class MuSTDrifter:
     def generate_semantic_dimension(self, **kwargs):
         self.logger.info("Generating embeddings...")
         if self.encode is None:
-            self.logger.info("Encoder not initialized. Initializing now...")
+            self.logger.debug("Encoder not initialized. Initializing now...")
             self._init_encoder()
             
         for period_id, documents in self.df.groupby("period_id"):
@@ -296,7 +296,7 @@ class MuSTDrifter:
             ):
                 drift["cos_drift"]= cos_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename, K=self.K, n_jobs=self.n_jobs)
             else: 
-                self.logger.info(f"Cosine drift result already exists at {_filename}. Skipping calculation.")
+                self.logger.debug(f"Cosine drift result already exists at {_filename}. Skipping calculation.")
 
         if "ks_drift" in metrics:
             _filename= f"{filename}_ks.json"
@@ -306,7 +306,7 @@ class MuSTDrifter:
             ):
                 drift["ks_drift"]=  ks_drift( reference_sample=reference_sample, test_sample=test_sample, filename=_filename)
             else:
-                self.logger.info(f"KS drift result already exists at {_filename}. Skipping calculation.")
+                self.logger.debug(f"KS drift result already exists at {_filename}. Skipping calculation.")
 
         if "mmd_drift" in metrics:
             _filename= f"{filename}_mmd.json"
@@ -316,7 +316,7 @@ class MuSTDrifter:
             ):
                 drift["mmd_drift"]= mmd_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename, K=self.K, n_jobs=self.n_jobs)
             else:
-                self.logger.info(f"MMD drift result already exists at {_filename}. Skipping calculation.")
+                self.logger.debug(f"MMD drift result already exists at {_filename}. Skipping calculation.")
 
         if "js_drift" in metrics:
             _filename= f"{filename}_js.json"
@@ -328,7 +328,7 @@ class MuSTDrifter:
             ):
                 drift["js_drift"]= js_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename)
             else:
-                self.logger.info(f"JS drift result already exists at {_filename}. Skipping calculation.")
+                self.logger.debug(f"JS drift result already exists at {_filename}. Skipping calculation.")
 
         if "kl_drift" in metrics:
             _filename= f"{filename}_kl.json"
@@ -340,7 +340,7 @@ class MuSTDrifter:
             ):
                 drift["kl_drift"]= kl_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename)
             else:
-                self.logger.info(f"KL drift result already exists at {_filename}. Skipping calculation.")
+                self.logger.debug(f"KL drift result already exists at {_filename}. Skipping calculation.")
 
         if "log_drift" in metrics:
             _filename= f"{filename}_log.json"
@@ -352,7 +352,7 @@ class MuSTDrifter:
             ):
                 drift["log_drift"]= log_likelihood_drift(reference_sample=reference_sample, test_sample=test_sample, filename=_filename, K=self.K, n_jobs=self.n_jobs)
             else:
-                self.logger.info(f"Log-likelihood drift result already exists at {_filename}. Skipping calculation.")
+                self.logger.debug(f"Log-likelihood drift result already exists at {_filename}. Skipping calculation.")
 
         return drift
 
@@ -475,7 +475,7 @@ class MuSTDrifter:
                 if i == e: continue
                 reference_period= period_ids[i]
                 test_period= period_ids[e]
-                self.logger.info(f"Starting drift calculation for period pair: {reference_period} vs {test_period}")
+                self.logger.debug(f"Starting drift calculation for period pair: {reference_period} vs {test_period}")
 
                 if "semantic" in drift_dimensions:
                     if metrics is None:

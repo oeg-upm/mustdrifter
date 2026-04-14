@@ -13,12 +13,12 @@ lid = None
 
 def _get_lid():
     global lid
-    logger.info("Loading language detection model.")
+    logger.debug("Loading language detection model.")
 
     if not MODEL_PATH.exists():
         urllib.request.urlretrieve(MODEL_URL, str(MODEL_PATH))
     lid = fasttext.load_model(str(MODEL_PATH))
-    logger.info("Language detection model loaded successfully.")
+    logger.debug("Language detection model loaded successfully.")
     return lid
 
 

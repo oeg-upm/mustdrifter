@@ -17,7 +17,7 @@ import os
 def js_drift(reference_sample, test_sample, filename):
     if filename=="": filename=None
 
-    logger.info("Running JS drift detection.")
+    logger.debug("Running JS drift detection.")
     if filename is not None:
         with open(filename, "w") as f:
             json.dump({}, f)
@@ -25,7 +25,7 @@ def js_drift(reference_sample, test_sample, filename):
     reference_sample = np.asarray(reference_sample, dtype=np.float64)
     test_sample = np.asarray(test_sample, dtype=np.float64)
 
-    logger.info("Computed mean distributions for reference and test samples.")
+    logger.debug("Computed mean distributions for reference and test samples.")
 
     magnitude = float(
         jensenshannon(reference_sample, test_sample, base=2.0)
@@ -36,7 +36,7 @@ def js_drift(reference_sample, test_sample, filename):
         with open(filename, "w") as f:
             json.dump({"magnitude": magnitude}, f)
 
-        logger.info(f"JS drift magnitude ({magnitude}) saved to {filename}")
+        logger.debug(f"JS drift magnitude ({magnitude}) saved to {filename}")
         
     return result
 
@@ -56,7 +56,7 @@ def kl_drift(reference_sample, test_sample, filename, eps=1e-12):
     """
     if filename=="": filename=None
 
-    logger.info("Running KL drift detection.")
+    logger.debug("Running KL drift detection.")
     if filename is not None:
         with open(filename, "w") as f:
             json.dump({}, f)
@@ -68,14 +68,14 @@ def kl_drift(reference_sample, test_sample, filename, eps=1e-12):
     p = (p + eps) / (p + eps).sum()
     q = (q + eps) / (q + eps).sum()
     
-    logger.info("Computed mean distributions and applied smoothing for KL divergence.")
+    logger.debug("Computed mean distributions and applied smoothing for KL divergence.")
     
     magnitude = float(np.sum(kl_div(p, q)))
     result = {"magnitude": magnitude}
     if filename is not None:
         with open(filename, "w") as f:
             json.dump(result, f)
-        logger.info(f"KL drift magnitude ({magnitude}) saved to {filename}")
+        logger.debug(f"KL drift magnitude ({magnitude}) saved to {filename}")
     return result
 
 
@@ -154,7 +154,7 @@ def log_likelihood_drift(
 ):
     if filename=="": filename=None
 
-    logger.info("Running log likelihood drift detection.")
+    logger.debug("Running log likelihood drift detection.")
     if filename is not None:
         with open(filename, "w") as f:
             json.dump({}, f)
@@ -171,7 +171,7 @@ def log_likelihood_drift(
         test_sample,
         alpha=alpha
     )
-    logger.info(f"Calculated log likelihood drift magnitude: {drift_magnitude}")
+    logger.debug(f"Calculated log likelihood drift magnitude: {drift_magnitude}")
 
     permutation_magnitudes = Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs)(
         delayed(run_log_likelihood_permutation)(
@@ -183,13 +183,13 @@ def log_likelihood_drift(
         )
         for permutation in range(K)
     )
-    logger.info(f"Completed {K} permutations for log likelihood drift detection.")
+    logger.debug(f"Completed {K} permutations for log likelihood drift detection.")
 
     p_value = (1 + sum(m >= drift_magnitude for m in permutation_magnitudes)) / (K + 1)
     result= {"magnitude": drift_magnitude, "p_value": p_value}
     if filename is not None:
         with open(filename, "w") as f:
             json.dump(result, f)
-        logger.info(f"Log likelihood drift results saved to {filename}")
+        logger.debug(f"Log likelihood drift results saved to {filename}")
     
     return result

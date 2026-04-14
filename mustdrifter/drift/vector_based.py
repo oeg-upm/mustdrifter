@@ -78,7 +78,7 @@ def run_mmd_permutation(
 def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
     if filename=="": filename=None
 
-    logger.info("Running MMD drift detection.")
+    logger.debug("Running MMD drift detection.")
     
     with open(filename, "w") as f:
         json.dump({}, f)
@@ -153,7 +153,7 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
 
     pending_permutations = [i for i, v in enumerate(permutation_test) if v is None]
 
-    logger.info(f"Running {K} permutations for MMD drift significance testing with {n_jobs} parallel jobs...")
+    logger.debug(f"Running {K} permutations for MMD drift significance testing with {n_jobs} parallel jobs...")
 
     permutation_test = run_parallel_permutations(
         worker_fn=run_mmd_permutation,
@@ -181,12 +181,12 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
         raise RuntimeError(f"{len(missing)} permutations were not completed.")
     
     p_value = (1 + sum(permutation_test)) / (K + 1)
-    logger.info(f"MMD drift detection completed. Drift magnitude: {drift_magnitude}, p-value: {p_value}")
+    logger.debug(f"MMD drift detection completed. Drift magnitude: {drift_magnitude}, p-value: {p_value}")
 
     result= {"magnitude": drift_magnitude, "p_value": p_value}
     with open(filename, "w") as f:
         json.dump(result, f)
-    logger.info(f"MMD drift results saved to {filename}")
+    logger.debug(f"MMD drift results saved to {filename}")
 
     if os.path.exists(bak_filename):
         os.remove(bak_filename)
@@ -245,7 +245,7 @@ def run_cos_permutation(
 def cos_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
     if filename=="": filename=None
 
-    logger.info("Running cosine drift detection.")
+    logger.debug("Running cosine drift detection.")
     with open(filename, "w") as f:
         json.dump({}, f)
         logger.debug(f"Initialized empty JSON file for drift results: {filename}")
@@ -290,7 +290,7 @@ def cos_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
             json.dump(build_cos_bak_data(permutation_test, drift_magnitude), f)
 
     pending_permutations = [i for i, v in enumerate(permutation_test) if v is None]
-    logger.info(f"Running {K} permutations for cosine drift significance testing with {n_jobs} parallel jobs...")
+    logger.debug(f"Running {K} permutations for cosine drift significance testing with {n_jobs} parallel jobs...")
 
     permutation_test = run_parallel_permutations(
         worker_fn=run_cos_permutation,
@@ -323,7 +323,7 @@ def cos_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
     result = {"magnitude": drift_magnitude, "p_value": p_value}
     with open(filename, "w") as f:
         json.dump(result, f)
-    logger.info(f"Cosine drift results saved to {filename}")
+    logger.debug(f"Cosine drift results saved to {filename}")
     
     if os.path.exists(bak_filename):
         os.remove(bak_filename)
