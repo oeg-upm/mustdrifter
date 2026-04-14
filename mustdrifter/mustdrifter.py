@@ -376,15 +376,26 @@ class MuSTDrifter:
         self.logger.info(f"Calculating syntactic drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_syntax_style_dimension(reference_period)
         test_sample= self.load_syntax_style_dimension(test_period)
+        
+        metric_values = {}
+        for metric in metrics:
+            filename= f"{self.syntax_style_drift_path}/{reference_period}_{test_period}_{metric.replace('_drift', '')}.json"
+            if ((not os.path.exists(filename)) or 
+                (rebase is True)
+            ):
+                metric_values[metric]= []
 
+        metrics= metric_values.keys()
+        if len(metrics) == 0:
+            self.logger.warning(f"All specified metrics already exist for syntactic style drift between {reference_period} and {test_period}. Skipping calculation.")
+            return {metric: self.load_syntax_style_drift(reference_period, test_period, metric) for metric in metrics}
+        
         dimensions= self.load_dimension_names("syntax_style")
-
         context_distributions= get_syntactic_style_sub_distributions(reference_sample=reference_sample,
                                                                      test_sample=test_sample,
                                                                      dimensions=dimensions)
 
-        metric_values = {metric: [] for metric in metrics}
-        base_path=f"{self.syntax_style_drift_path}/{reference_period}_{test_period}"
+        
 
         for sub_distribution in context_distributions:
             ref_dist = np.asarray(sub_distribution["reference_distribution"], dtype=np.float64)
@@ -403,8 +414,6 @@ class MuSTDrifter:
             sub_distribution_context = sub_distribution["context"]
 
             sub_distribution_context = re.sub(r"[^A-Za-z0-9_\-+]", "_", sub_distribution_context)
-            filename=f"{base_path}/{sub_distribution_context}"
-
             drift_result = self._calculate_drift(
                 reference_sample=ref_dist,
                 test_sample=test_dist,
