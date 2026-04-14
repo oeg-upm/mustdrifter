@@ -385,11 +385,13 @@ class MuSTDrifter:
                 (rebase is True)
             ):
                 metric_values[metric]= []
-
+            else:
+                self.logger.debug(f"Syntactic Style result already exists at {filename}. Skipping calculation.")
+                
         metrics= metric_values.keys()
+
         if len(metrics) == 0:
-            self.logger.warning(f"All specified metrics already exist for syntactic style drift between {reference_period} and {test_period}. Skipping calculation.")
-            return {metric: self.load_syntax_style_drift(reference_period, test_period, metric) for metric in metrics}
+            return
         
         dimensions= self.load_dimension_names("syntax_style")
         context_distributions= get_syntactic_style_sub_distributions(reference_sample=reference_sample,
