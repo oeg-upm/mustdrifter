@@ -694,6 +694,9 @@ class MuSTDrifter:
         plt.close(fig)
     
     def report_all_drift_heatmap(self, export=False):
+        if self.report_drift_tables is None:
+            self._build_report_drift_tables()
+
         for dimension, metric_tables in self.report_drift_tables.items():
             for metric in metric_tables.keys():
                 self.report_drift_heatmap(dimension=dimension, metric=metric, export=export)
