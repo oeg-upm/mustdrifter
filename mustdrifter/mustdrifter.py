@@ -655,7 +655,10 @@ class MuSTDrifter:
         return cleaned_tables
 
 
-    def plot_drift_heatmap(self, dimension, metric, export=False):
+    def report_drift_heatmap(self, dimension, metric, export=False):
+        if self.report_drift_tables is None:
+            self._build_report_drift_tables()
+
         titles_dimension = {
             "semantic": "Semantic Drift",
             "syntactic_content": "Syntactic Content Drift",
