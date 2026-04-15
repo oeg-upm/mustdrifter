@@ -688,7 +688,7 @@ class MuSTDrifter:
         fig.tight_layout()
         if export:
             filename= f"{self.df_name}_{dimension}_{metric}.svg"
-            fig.savefig(f"{self.report_path}/{filename}", format="svg", bbox_inches="tight")
+            fig.savefig(f"{self.report_path}/{filename}", format="svg", bbox_inches="tight", pad_inches=0, transparent=True)
         
         plt.show()
         plt.close(fig)
