@@ -8,6 +8,8 @@ from itertools import product
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+from pathlib import Path
+from svgutils.compose import Figure, SVG, Text
 
 from .generators import TokenGenerator, EmbeddingsGenerator
 from .preprocessing import annotate_pos
@@ -530,9 +532,7 @@ class MuSTDrifter:
         self.logger.info("Drift calculation completed for all period pairs.")
     ###
     
-    ### Report
-    
-    
+    ### Report  
     def _build_report_drift_tables(
         self,
         dimensions=None,
@@ -654,7 +654,6 @@ class MuSTDrifter:
         self.report_drift_tables = cleaned_tables
         return cleaned_tables
 
-
     def report_drift_heatmap(self, dimension, metric, export=False):
         if self.report_drift_tables is None:
             self._build_report_drift_tables()
@@ -675,7 +674,7 @@ class MuSTDrifter:
             "log": "Log-Likelihood",
             "ks": "Kolmogorov–Smirnov Test, KS"
         }
-        
+
         table= self.report_drift_tables[dimension][metric]
         abs_table = table.abs()
 
@@ -687,9 +686,9 @@ class MuSTDrifter:
         sns.heatmap(abs_table, annot=True, cmap="RdYlGn_r", fmt=".3f", ax=ax)
         fig.tight_layout()
         if export:
-            filename= f"{self.df_name}_{dimension}_{metric}.svg"
-            fig.savefig(f"{self.report_path}/{filename}", format="svg", bbox_inches="tight", pad_inches=0, transparent=True)
-        
+            filename= f"{self.report_path}/{self.df_name}_{dimension}_{metric}.svg"
+            fig.savefig(filename, format="svg", bbox_inches="tight", pad_inches=0, transparent=True)
+
         plt.show()
         plt.close(fig)
     
@@ -700,4 +699,77 @@ class MuSTDrifter:
         for dimension, metric_tables in self.report_drift_tables.items():
             for metric in metric_tables.keys():
                 self.report_drift_heatmap(dimension=dimension, metric=metric, export=export)
+
+    def report_group_all_drift_heatmap(self, export=True):
+        structure = {
+            "semantic": ["mmd", "cos", "ks"],
+            "lexical": ["js", "kl", "log"],
+            "syntactic_content": ["js", "kl", "log"],
+            "syntactic_style": ["js", "kl", "log"],
+            "thematic": ["js", "kl", "log"],
+        }
+
+        dim_titles = {
+            "semantic": "Semantic",
+            "lexical": "Lexical",
+            "syntactic_content": "Syntactic (Content)",
+            "syntactic_style": "Syntactic (Style)",
+            "thematic": "Thematic",
+        }
+
+        base_path = Path(self.report_path)
+        
+        output_path = base_path / f"{self.df_name}_report.svg"
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        cell_w = 600
+        cell_h = 450
+        title_h = 60
+
+        n_blocks = len(structure)
+        n_cols_max = max(len(metrics) for metrics in structure.values())
+
+        elements = []
+
+        for block_idx, (dimension, metrics) in enumerate(structure.items()):
+            y_title = block_idx * (cell_h + title_h)
+            y_plots = y_title + title_h
+
+            row_width = len(metrics) * cell_w
+            x_offset = (n_cols_max * cell_w - row_width) / 2
+
+            elements.append(
+                Text(
+                    dim_titles.get(dimension, dimension),
+                    row_width / 2,
+                    y_title + title_h / 2,
+                    size=24,
+                    weight="bold",
+                    anchor="middle",
+                )
+            )
+
+            for col_idx, metric in enumerate(metrics):
+                file_path = base_path / f"{self.df_name}_{dimension}_{metric}.svg"
+                if not file_path.exists():
+                    continue
+
+                x = x_offset + col_idx * cell_w
+
+                elements.append(
+                    SVG(str(file_path))
+                    .move(x, y_plots)
+                )
+
+        canvas_w = n_cols_max * cell_w
+        canvas_h = n_blocks * (cell_h + title_h)
+
+        fig = Figure(f"{canvas_w}px", f"{canvas_h}px", *elements)
+
+        if export:
+            fig.save(str(output_path))
+
+        plt.show(fig)
+        plt.close(fig)
+        return fig
     ###
