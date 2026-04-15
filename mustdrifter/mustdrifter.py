@@ -4,6 +4,10 @@ import numpy as np
 import pandas as pd
 import re
 import json
+from itertools import product
+
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 from .generators import TokenGenerator, EmbeddingsGenerator
 from .preprocessing import annotate_pos
@@ -34,27 +38,36 @@ class MuSTDrifter:
         self.semantic_dimension=       None
         self.thematic_dimension=       None        
 
-        self.pos_annotations_path=      f"{self.results_path}/{self.df_name}/data"
+        self.report_drift_tables=      None
 
-        self.syntax_content_path=       f"{self.results_path}/{self.df_name}/data/syntax/content"
-        self.syntax_style_path=         f"{self.results_path}/{self.df_name}/data/syntax/style"
-        self.lexical_path=              f"{self.results_path}/{self.df_name}/data/lexical"
-        self.semantic_path=             f"{self.results_path}/{self.df_name}/data/semantic"
-        self.thematic_path=             f"{self.results_path}/{self.df_name}/data/thematic"
+        self.base_path=                 f"{self.results_path}/{self.df_name}"
 
-        self.syntax_content_drift_path= f"{self.results_path}/{self.df_name}/drift/syntax/content"
-        self.syntax_style_drift_path=   f"{self.results_path}/{self.df_name}/drift/syntax/style"
-        self.lexical_drift_path=        f"{self.results_path}/{self.df_name}/drift/lexical"
-        self.semantic_drift_path=       f"{self.results_path}/{self.df_name}/drift/semantic"
-        self.thematic_drift_path=       f"{self.results_path}/{self.df_name}/drift/thematic"
-        
-        os.makedirs(self.pos_annotations_path,      exist_ok=True)
+        self.data_path=      f"{self.base_path}/data"
+        self.drift_path=     f"{self.base_path}/drift"
+        self.report_path=    f"{self.base_path}/report"
 
-        os.makedirs(self.syntax_content_path,    exist_ok=True)
-        os.makedirs(self.syntax_style_path,      exist_ok=True)
-        os.makedirs(self.lexical_path,              exist_ok=True)
-        os.makedirs(self.semantic_path,             exist_ok=True)
-        os.makedirs(self.thematic_path,             exist_ok=True)
+        self.syntax_content_data_path=       f"{self.data_path}/syntax/content"
+        self.syntax_style_data_path=         f"{self.data_path}/syntax/style"
+        self.lexical_data_path=              f"{self.data_path}/lexical"
+        self.semantic_data_path=             f"{self.data_path}/semantic"
+        self.thematic_data_path=             f"{self.data_path}/thematic"
+
+        self.syntax_content_drift_path= f"{self.drift_path}/syntax/content"
+        self.syntax_style_drift_path=   f"{self.drift_path}/syntax/style"
+        self.lexical_drift_path=        f"{self.drift_path}/lexical"
+        self.semantic_drift_path=       f"{self.drift_path}/semantic"
+        self.thematic_drift_path=       f"{self.drift_path}/thematic"
+
+        os.makedirs(self.base_path,   exist_ok=True)
+        os.makedirs(self.data_path,   exist_ok=True)
+        os.makedirs(self.drift_path,  exist_ok=True)
+        os.makedirs(self.report_path, exist_ok=True)
+
+        os.makedirs(self.syntax_content_data_path, exist_ok=True)
+        os.makedirs(self.syntax_style_data_path,   exist_ok=True)
+        os.makedirs(self.lexical_data_path,        exist_ok=True)
+        os.makedirs(self.semantic_data_path,       exist_ok=True)
+        os.makedirs(self.thematic_data_path,       exist_ok=True)
 
         os.makedirs(self.syntax_content_drift_path, exist_ok=True)
         os.makedirs(self.syntax_style_drift_path,   exist_ok=True)
@@ -76,13 +89,13 @@ class MuSTDrifter:
 
     def _annotate_pos(self):
         self.logger.info("Starting POS annotation...")
-        self.df, self.pos_annotations = annotate_pos(self.df, f"{self.pos_annotations_path}/dataset", device=self.device)
+        self.df, self.pos_annotations = annotate_pos(self.df, f"{self.data_path}/dataset", device=self.device)
         self.logger.info("POS annotation completed.")
     
     def _load_pos_annotation(self):
         self.logger.debug("Loading POS annotations...")
-        self.df = pd.read_csv(f"{self.pos_annotations_path}/dataset.csv", index_col="Unnamed: 0")
-        self.pos_annotations= pd.read_csv(f"{self.pos_annotations_path}/dataset_pos.csv")
+        self.df = pd.read_csv(f"{self.data_path}/dataset.csv", index_col="Unnamed: 0")
+        self.pos_annotations= pd.read_csv(f"{self.data_path}/dataset_pos.csv")
         self.logger.debug("POS annotations loaded.")
         return self.df, self.pos_annotations
 
@@ -119,31 +132,31 @@ class MuSTDrifter:
 
     ### Dimension Loaders   
     def load_syntax_content_dimension(self, period_id):
-        _path= f'{self.syntax_content_path}/{period_id}.npy'
+        _path= f'{self.syntax_content_data_path}/{period_id}.npy'
         self.logger.debug(f"Syntax content dimension loaded from {_path}")
         with open(_path, 'rb') as f:
             return np.load(f)
     
     def load_syntax_style_dimension(self, period_id):
-        _path= f'{self.syntax_style_path}/{period_id}.npy'
+        _path= f'{self.syntax_style_data_path}/{period_id}.npy'
         self.logger.debug(f"Syntax style dimension loaded from {_path}")
         with open(_path, 'rb') as f:
             return np.load(f)
     
     def load_lexical_dimension(self, period_id):
-        _path= f'{self.lexical_path}/{period_id}.npy'
+        _path= f'{self.lexical_data_path}/{period_id}.npy'
         self.logger.debug(f"Lexical dimension loaded from {_path}")
         with open(_path, 'rb') as f:
             return np.load(f)
 
     def load_semantic_dimension(self, period_id):
-        _path= f'{self.semantic_path}/{period_id}.npy'
+        _path= f'{self.semantic_data_path}/{period_id}.npy'
         self.logger.debug(f"Semantic dimension loaded from {_path}")
         with open(_path, 'rb') as f:
             return np.load(f)
     
     def load_thematic_dimension(self, period_id):
-        _path= f'{self.thematic_path}/{period_id}.npy'
+        _path= f'{self.thematic_data_path}/{period_id}.npy'
         self.logger.debug(f"Thematic dimension loaded from {_path}")
         with open(_path, 'rb') as f:
             return np.load(f)
@@ -151,15 +164,15 @@ class MuSTDrifter:
     def load_dimension_names(self, dimension):
         dimension_names_file= "dimensions_names.json"
         if dimension == "syntax_content":
-            path= f"{self.syntax_content_path}/{dimension_names_file}"
+            path= f"{self.syntax_content_data_path}/{dimension_names_file}"
         elif dimension == "syntax_style":
-            path= f"{self.syntax_style_path}/{dimension_names_file}"
+            path= f"{self.syntax_style_data_path}/{dimension_names_file}"
         elif dimension == "lexical":
-            path= f"{self.lexical_path}/{dimension_names_file}"
+            path= f"{self.lexical_data_path}/{dimension_names_file}"
         elif dimension == "semantic":
-            path= f"{self.semantic_path}/{dimension_names_file}"
+            path= f"{self.semantic_data_path}/{dimension_names_file}"
         elif dimension == "thematic":
-            path= f"{self.thematic_path}/{dimension_names_file}"
+            path= f"{self.thematic_data_path}/{dimension_names_file}"
         else:
             raise ValueError(f"Unknown dimension: {dimension}")
 
@@ -209,7 +222,7 @@ class MuSTDrifter:
         self.syntax_content_dimension= get_syntactic_content_distribution(self.pos_annotations, self.df, **kwargs)
         self.logger.debug("Syntactic content distribution generated.")
         
-        self._export_dimension_annotations(self.syntax_content_dimension, self.syntax_content_path)
+        self._export_dimension_annotations(self.syntax_content_dimension, self.syntax_content_data_path)
         self.logger.info("Syntactic content features exported.")
         
     def generate_syntax_style_dimension(self, **kwargs):
@@ -219,7 +232,7 @@ class MuSTDrifter:
         self.syntax_style_dimension= get_syntactic_style_distribution(self.pos_annotations, self.df, **kwargs)
         self.logger.debug("Syntactic style distribution generated.")
         
-        self._export_dimension_annotations(self.syntax_style_dimension, self.syntax_style_path)
+        self._export_dimension_annotations(self.syntax_style_dimension, self.syntax_style_data_path)
         self.logger.info("Syntactic style features exported.")
 
     def generate_lexical_dimension(self, **kwargs):
@@ -229,7 +242,7 @@ class MuSTDrifter:
         self.lexical_dimension= get_lexical_distribution(self.pos_annotations, self.df, **kwargs)
         self.logger.debug("Lexical distribution generated.")
 
-        self._export_dimension_annotations(self.lexical_dimension, self.lexical_path)
+        self._export_dimension_annotations(self.lexical_dimension, self.lexical_data_path)
         self.logger.info("Lexical features exported.")
 
     def generate_semantic_dimension(self, **kwargs):
@@ -243,10 +256,10 @@ class MuSTDrifter:
             vectors= self.encode(tokens).numpy()
             self.logger.debug(f"Embeddings generated for period {period_id} with shape {vectors.shape}.")
 
-            with open(f'{self.semantic_path}/{period_id}.npy', 'wb') as f:
+            with open(f'{self.semantic_data_path}/{period_id}.npy', 'wb') as f:
                 np.save(f, vectors)
 
-            self.logger.debug(f"Embeddings saved for period {period_id} at {self.semantic_path}/{period_id}.npy")
+            self.logger.debug(f"Embeddings saved for period {period_id} at {self.semantic_data_path}/{period_id}.npy")
 
         self.logger.info("All embeddings generated and saved.")
 
@@ -256,7 +269,7 @@ class MuSTDrifter:
         self.thematic_dimension = self.thematic_dimension.drop(columns=[-1, "-1"], errors="ignore")
         self.logger.debug("Thematic dimension generated.")
         
-        self._export_dimension_annotations(self.thematic_dimension, self.thematic_path)
+        self._export_dimension_annotations(self.thematic_dimension, self.thematic_data_path)
         self.logger.info("Thematic features exported.")
 
     def generate_drift_dimensions(self, dimensions=["semantic", "syntactic_content", "syntactic_style", "lexical", "thematic"], **kwargs):
@@ -515,4 +528,166 @@ class MuSTDrifter:
                     self.calculate_thematic_drift(reference_period=reference_period, test_period=test_period, metrics=_metrics, rebase=rebase)
 
         self.logger.info("Drift calculation completed for all period pairs.")
+    ###
+    
+    ### Report
+    
+    
+    def _build_report_drift_tables(
+        self,
+        dimensions=None,
+        metrics=None,
+        score_key="magnitude",
+        fill_diagonal=0.0,
+        sort_periods=True,
+    ):
+        allowed_dimensions = {
+            "semantic": self.load_semantic_drift,
+            "syntactic_content": self.load_syntax_content_drift,
+            "syntactic_style": self.load_syntax_style_drift,
+            "lexical": self.load_lexical_drift,
+            "thematic": self.load_thematic_drift,
+        }
+
+        if dimensions is None:
+            dimensions = list(allowed_dimensions.keys())
+
+        invalid_dimensions = [dim for dim in dimensions if dim not in allowed_dimensions]
+        if invalid_dimensions:
+            raise ValueError(
+                f"Invalid dimensions: {invalid_dimensions}. "
+                f"Allowed values are: {list(allowed_dimensions.keys())}"
+            )
+
+        if metrics is None:
+            metrics = ["mmd", "cos", "kl", "js", "log"]
+
+        periods = self.df["period_id"].dropna().unique().tolist()
+
+        if sort_periods:
+            periods = sorted(periods, key=lambda x: int(x))
+
+        tables = {
+            dimension: {
+                metric: pd.DataFrame(index=periods, columns=periods, dtype=float)
+                for metric in metrics
+            }
+            for dimension in dimensions
+        }
+
+        for dimension in dimensions:
+            load_method = allowed_dimensions[dimension]
+
+            for metric in metrics:
+                self.logger.info(
+                    f"Building drift table for dimension '{dimension}' and metric '{metric}'"
+                )
+
+                table = tables[dimension][metric]
+
+                for reference_period, test_period in product(periods, periods):
+                    if reference_period == test_period:
+                        continue
+
+                    try:
+                        drift_data = load_method(
+                            reference_period=reference_period,
+                            test_period=test_period,
+                            metric=metric,
+                        )
+
+                        if drift_data is None:
+                            continue
+
+                        score = drift_data.get(score_key)
+                        if score is None:
+                            self.logger.warning(
+                                f"Score key '{score_key}' not found for "
+                                f"{dimension} drift ({reference_period} -> {test_period}, metric={metric})"
+                            )
+                            continue
+
+                        table.loc[reference_period, test_period] = float(score)
+
+                    except Exception as exc:
+                        self.logger.debug(
+                            f"Could not load {dimension} drift "
+                            f"({reference_period} -> {test_period}, metric={metric}): {exc}"
+                        )
+                if table.isna().all().all():
+                    self.logger.warning(f"Could not load {dimension} drift for metric {metric}")
+                    continue
+
+                
+                if fill_diagonal is not None:
+                    for period in table.index.intersection(table.columns):
+                        row = table.loc[period].drop(labels=period, errors="ignore")
+                        col = table[period].drop(labels=period, errors="ignore")
+                        
+                        if not (row.isna().all() and col.isna().all()):
+                            table.loc[period, period] = fill_diagonal
+
+                tables[dimension][metric] = table
+
+        cleaned_tables = {}
+
+        for dimension, metric_tables in tables.items():
+            cleaned_metric_tables = {}
+
+            for metric, table in metric_tables.items():
+                if table.isna().all().all():
+                    self.logger.info(
+                        f"Removing empty drift table for dimension '{dimension}' and metric '{metric}'"
+                    )
+                    continue
+
+                table = table.dropna(axis=0, how="all").dropna(axis=1, how="all")
+                
+                cleaned_metric_tables[metric] = table
+
+            if cleaned_metric_tables:
+                cleaned_tables[dimension] = cleaned_metric_tables
+            else:
+                self.logger.info(
+                    f"Removing dimension '{dimension}' because all metric tables are empty"
+                )
+        self.report_drift_tables = cleaned_tables
+        return cleaned_tables
+
+
+    def plot_drift_heatmap(self, dimension, metric, export=False):
+        titles_dimension = {
+            "semantic": "Semantic Drift",
+            "syntactic_content": "Syntactic Content Drift",
+            "syntactic_style": "Syntactic Style Drift", 
+            "lexical": "Lexical Drift",
+            "thematic": "Thematic Drift"
+        }
+        
+        tiles_metrics= {
+            "mmd": "Maximum Mean Discrepancy, MMD",
+            "cos": "Cosine Distance",
+            "kl": "Kullback–Leibler Divergence, KL",
+            "js": "Jensen–Shannon Divergence, JS",
+            "log": "Log-Likelihood",
+            "ks": "Kolmogorov–Smirnov Test, KS"
+        }
+        
+        table= self.report_drift_tables[dimension][metric]
+        abs_table = table.abs()
+
+        fig, ax = plt.subplots(figsize=(8, 6))
+
+        title= "Absolute Values of " + titles_dimension[dimension]+ " (" + tiles_metrics[metric] + ") Across Periods"
+        ax.set_title(title)
+        
+        sns.heatmap(abs_table, annot=True, cmap="RdYlGn_r", fmt=".3f", ax=ax)
+        fig.tight_layout()
+        if export:
+            filename= f"{self.df_name}_{dimension}_{metric}.svg"
+            fig.savefig(f"{self.report_path}/{filename}", format="svg", bbox_inches="tight")
+        
+        plt.show()
+        plt.close(fig)
+    
     ###
