@@ -560,7 +560,7 @@ class MuSTDrifter:
             )
 
         if metrics is None:
-            metrics = ["mmd", "cos", "kl", "js", "log"]
+            metrics = ["mmd", "cos", "ks", "kl", "js", "log"]
 
         periods = self.df["period_id"].dropna().unique().tolist()
 
