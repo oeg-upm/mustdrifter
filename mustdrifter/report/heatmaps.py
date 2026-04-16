@@ -51,6 +51,8 @@ def _plot_heatmap(
     figsize=(8, 6),
     cmap="RdYlGn_r",
     fmt=".3f",
+    vmin= None,
+    vmax= None,
 ):
     if table is None or table.empty:
         return None
@@ -60,7 +62,17 @@ def _plot_heatmap(
     fig, ax = plt.subplots(figsize=figsize)
     ax.set_title(title, fontsize=16, weight="bold")
 
-    sns.heatmap(abs_table, annot=True, cmap=cmap, fmt=fmt, ax=ax)
+    if vmin is None: vmin= table.min().min()
+    if vmax is None: vmax= table.max().max()
+
+    sns.heatmap(abs_table, 
+                annot=True,
+                cmap=cmap,
+                fmt=fmt,
+                ax=ax,
+                vmin=vmin,
+                vmax=vmax
+                )
 
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
     ax.set_yticklabels(ax.get_yticklabels(), rotation=0)
@@ -120,6 +132,8 @@ def generate_magnitude_heatmaps(
             figsize=figsize,
             cmap=cmap,
             fmt=fmt,
+            vmin=0,
+            vmax=1
         )
 
         return fig
@@ -147,6 +161,8 @@ def generate_magnitude_heatmaps(
                 figsize=figsize,
                 cmap=cmap,
                 fmt=fmt,
+                vmin=0,
+                vmax=1
             )
 
             if fig is not None:
