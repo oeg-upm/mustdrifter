@@ -487,8 +487,8 @@ class MuSTDrifter:
 
         period_ids= self.df["period_id"].unique()
 
-        for i in range(len(period_ids)-1):
-            for e in range(len(period_ids)-1):
+        for i in range(len(period_ids)):
+            for e in range(len(period_ids)):
                 if i == e: continue
                 reference_period= period_ids[i]
                 test_period= period_ids[e]
