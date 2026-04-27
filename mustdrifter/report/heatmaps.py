@@ -60,7 +60,7 @@ def _plot_heatmap(
     abs_table = table.abs()
 
     fig, ax = plt.subplots(figsize=figsize)
-    ax.set_title(title, fontsize=16, weight="bold")
+    ax.set_title(title, fontsize=14, weight="bold")
 
     if vmin is None: vmin= table.min().min()
     if vmax is None: vmax= table.max().max()
