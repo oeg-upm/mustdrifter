@@ -790,7 +790,7 @@ class MuSTDrifter:
         
         cell_w = 600
         cell_h = 450
-        title_h = 18
+        title_h = 16
 
         n_blocks = len(structure)
         n_cols_max = max(len(metrics) for metrics in structure.values())
