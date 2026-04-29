@@ -786,11 +786,11 @@ class MuSTDrifter:
         output_path = base_path / f"{self.df_name}_report.svg"
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        top_padding = 8
+        top_padding = 6
         
         cell_w = 600
         cell_h = 450
-        title_h = 14
+        title_h = 11
 
         n_blocks = len(structure)
         n_cols_max = max(len(metrics) for metrics in structure.values())
@@ -811,7 +811,7 @@ class MuSTDrifter:
                     dim_titles.get(dimension, dimension),
                     row_width / 2,
                     y_title + title_h / 2,
-                    size=14,
+                    size=11,
                     weight="bold",
                     anchor="middle",
                 )
