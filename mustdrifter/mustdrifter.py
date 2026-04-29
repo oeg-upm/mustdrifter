@@ -786,7 +786,7 @@ class MuSTDrifter:
         output_path = base_path / f"{self.df_name}_report.svg"
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        top_padding = 50
+        top_padding = 15
         
         cell_w = 600
         cell_h = 450
