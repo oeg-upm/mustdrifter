@@ -290,8 +290,8 @@ def plot_aggregated_dimension_values_heatmap(
 
     cell_padding_x = 0.08
     cell_padding_y = 0.18
-    inner_gap_y = 0.0
-    inner_gap_y = 0.035
+    inner_gap_y = 0.    
+    inner_gap_x = 0.018
 
     inner_width = (
         1 - 2 * cell_padding_x - (inner_cols - 1) * inner_gap_x
