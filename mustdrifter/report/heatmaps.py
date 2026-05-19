@@ -366,7 +366,7 @@ def plot_aggregated_dimension_values_heatmap(
                 else:
                     text_color = (
                             "white"
-                            if (value >= 0.82 or value <= 0.12)
+                            if (value >= 0.85 or value <= 0.15)
                             else "black"
                         )
                     combined_text = (
