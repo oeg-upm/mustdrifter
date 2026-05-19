@@ -320,7 +320,7 @@ def plot_aggregated_dimension_values_heatmap(
                     "—",
                     ha="center",
                     va="center",
-                    fontsize=12,
+                    fontsize=18,
                 )
                 continue
 
@@ -369,7 +369,7 @@ def plot_aggregated_dimension_values_heatmap(
                     combined_text,
                     ha="center",
                     va="center",
-                    fontsize=10,
+                    fontsize=18,
                     fontweight="bold",
                     color=text_color,
                 )
@@ -377,10 +377,10 @@ def plot_aggregated_dimension_values_heatmap(
     ax.set_xticks(np.arange(n_periods) + 0.5)
     ax.set_yticks(np.arange(n_periods) + 0.5)
     ax.set_xticklabels(labels, rotation=45, ha="right", fontsize=10)
-    ax.set_yticklabels(labels, fontsize=10)
+    ax.set_yticklabels(labels, fontsize=18)
 
     ax.tick_params(length=0)
-    ax.set_title(title, fontsize=16, fontweight="bold", pad=18)
+    ax.set_title(title, fontsize=26, fontweight="bold", pad=18)
 
     colorbar = fig.colorbar(
         cm.ScalarMappable(norm=norm, cmap=cmap),
@@ -399,7 +399,7 @@ def plot_aggregated_dimension_values_heatmap(
         "Dimensions\n\n" + "\n".join(legend_lines),
         transform=ax.transAxes,
         va="top",
-        fontsize=9.5,
+        fontsize=18,
         linespacing=1.5,
         bbox=dict(
             boxstyle="round,pad=0.4",
