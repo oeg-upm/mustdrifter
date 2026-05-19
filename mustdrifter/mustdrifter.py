@@ -882,6 +882,6 @@ class MuSTDrifter:
             **kwargs,
         )
         
-        plot_aggregated_dimension_values_heatmap(tables, base_filename=f"{self.report_path}/{self.df_name}_aggregated_dimensions.svg", export=export, **kwargs)
+        plot_aggregated_dimension_values_heatmap(tables, filename=f"{self.report_path}/{self.df_name}_aggregated_dimensions.svg", export=export, **kwargs)
         
         
