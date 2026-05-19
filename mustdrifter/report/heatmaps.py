@@ -405,11 +405,13 @@ def plot_aggregated_dimension_values_heatmap(
         for dim in dimensions_order
     ]
 
-    ax.text(
-        1.01,
-        0.47,
+    legend_ax = fig.add_axes([0.845, 0.18, 0.13, 0.22])
+    legend_ax.axis("off")
+
+    legend_ax.text(
+        0,
+        1,
         "Dimensions\n\n" + "\n".join(legend_lines),
-        transform=ax.transAxes,
         va="top",
         fontsize=9.5,
         linespacing=1.5,
