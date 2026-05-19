@@ -269,13 +269,13 @@ def plot_aggregated_dimension_values_heatmap(
 
     fig = plt.figure(figsize=figsize)
 
-    ax = fig.add_axes([0.06, 0.12, 0.78, 0.74])
+    ax = fig.add_axes([0.06, 0.16, 0.78, 0.68])
     cax = fig.add_axes([0.758, 0.53, 0.022, 0.30])
 
     ax.set_xlim(0, n_periods)
     ax.set_ylim(0, n_periods)
     ax.invert_yaxis()
-    ax.set_aspect("equal")
+    ax.set_aspect("auto")
 
     inner_positions = {
         0: (0, 0),
@@ -405,13 +405,11 @@ def plot_aggregated_dimension_values_heatmap(
         for dim in dimensions_order
     ]
 
-    legend_ax = fig.add_axes([0.845, 0.18, 0.13, 0.22])
-    legend_ax.axis("off")
-
-    legend_ax.text(
-        0,
-        1,
+    ax.text(
+        1.01,
+        0.47,
         "Dimensions\n\n" + "\n".join(legend_lines),
+        transform=ax.transAxes,
         va="top",
         fontsize=9.5,
         linespacing=1.5,
