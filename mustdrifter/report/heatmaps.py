@@ -228,7 +228,7 @@ def plot_aggregated_dimension_values_heatmap(
     dimension_short_names=None,
     title="Multidimensional discourse drift by dimension",
     cmap_name="RdYlGn_r",
-    figsize=(14, 12),
+    figsize=(20, 10),
     filename=None,
     show_values=True,
     export= False,
@@ -269,7 +269,7 @@ def plot_aggregated_dimension_values_heatmap(
 
     fig = plt.figure(figsize=figsize)
 
-    ax = fig.add_axes([0.08, 0.10, 0.68, 0.78])
+    ax = fig.add_axes([0.06, 0.12, 0.78, 0.74])
     cax = fig.add_axes([0.758, 0.53, 0.022, 0.30])
 
     ax.set_xlim(0, n_periods)
@@ -281,17 +281,16 @@ def plot_aggregated_dimension_values_heatmap(
         0: (0, 0),
         1: (1, 0),
         2: (2, 0),
-        3: (0, 1),
-        4: (1, 1),
-        5: (2, 1),
+        3: (3, 0),
+        4: (4, 0),
     }
 
-    inner_cols = 3
-    inner_rows = 2
+    inner_cols = len(dimensions_order)
+    inner_rows = 1
 
     cell_padding_x = 0.08
-    cell_padding_y = 0.10
-    inner_gap_x = 0.018
+    cell_padding_y = 0.18
+    inner_gap_y = 0.0
     inner_gap_y = 0.035
 
     inner_width = (
@@ -381,7 +380,7 @@ def plot_aggregated_dimension_values_heatmap(
                     combined_text,
                     ha="center",
                     va="center",
-                    fontsize=7.2,
+                    fontsize=8.5,
                     fontweight="bold",
                     color=text_color,
                     linespacing=1.15,
