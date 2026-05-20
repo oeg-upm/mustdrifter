@@ -376,7 +376,7 @@ def plot_aggregated_dimension_values_heatmap(
 
     ax.set_xticks(np.arange(n_periods) + 0.5)
     ax.set_yticks(np.arange(n_periods) + 0.5)
-    ax.set_xticklabels(labels, rotation=45, ha="right", fontsize=10)
+    ax.set_xticklabels(labels, rotation=45, ha="right", fontsize=18)
     ax.set_yticklabels(labels, fontsize=18)
 
     ax.tick_params(length=0)
