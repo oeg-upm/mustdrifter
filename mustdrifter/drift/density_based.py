@@ -15,6 +15,28 @@ import os
 
 
 def js_drift(reference_sample, test_sample, filename):
+    """
+    Compute the Jensen-Shannon (JS) divergence between two distributions to measure drift.
+    This function calculates the JS divergence between a reference sample and a test sample.
+    Optionally, the results can be saved to a JSON file.
+    
+    Parameters
+    ----------
+        reference_sample (np.ndarray): The reference sample distribution.
+        test_sample (np.ndarray): The test sample distribution.
+        filename (str): Path to the JSON file where the results will be saved. If an empty string
+                        is provided, no file will be created.
+    Returns
+    -------
+    dict
+        A dictionary containing the JS divergence magnitude with the key "magnitude".
+        
+    Notes
+    -----
+    - The JS divergence is a symmetric measure of the difference between two probability distributions.
+    - The input samples are converted to NumPy arrays of type float64 before computation.
+    - If a filename is provided, the results are saved in JSON format.
+    """
     if filename=="": filename=None
 
     logger.debug("Running JS drift detection.")
@@ -43,16 +65,36 @@ def js_drift(reference_sample, test_sample, filename):
 
 def kl_drift(reference_sample, test_sample, filename, eps=1e-12):
     """
-    Computes the Kullback-Leibler Divergence (P || Q).
+    Computes the Kullback-Leibler (KL) divergence between two distributions to measure drift.
+    The KL divergence measures how one probability distribution diverges from a second, 
+    expected probability distribution. This function normalizes the input distributions, 
+    applies smoothing to avoid numerical issues, and computes the KL divergence. Optionally, 
+    it can save the computed drift magnitude to a JSON file.
     
-    Args:
-        reference_sample (np.ndarray): Baseline distribution.
-        test_sample (np.ndarray): Target distribution.
-        filename (str): Path to store the drift magnitude.
-        eps (float): Small constant to avoid log(0) and division by zero.
-
-    Returns:
-        float: Total KL divergence sum.
+    Parameters
+    ----------
+        reference_sample (np.ndarray): The baseline distribution (P).
+        test_sample (np.ndarray): The target distribution (Q).
+        filename (str): Path to a JSON file where the drift magnitude will be stored. 
+                        If an empty string is provided, the result will not be saved.
+        eps (float, optional): A small constant added to avoid log(0) and division by zero. 
+                               Defaults to 1e-12.
+                               
+    Returns
+    -------
+    dict
+        A dictionary containing the computed KL divergence magnitude under the key "magnitude".
+        
+    Raises
+    ------
+    ValueError
+        If the input distributions are not of the same shape.
+        
+    Notes
+    -----
+    - The KL divergence is computed as: sum(P * log(P / Q)).
+    - The input distributions are normalized to ensure they sum to 1.
+    - The function logs intermediate steps for debugging purposes.
     """
     if filename=="": filename=None
 
@@ -152,6 +194,28 @@ def log_likelihood_drift(
     n_jobs=10,
     alpha=1e-12
 ):
+    """    
+    Perform log likelihood drift detection between a reference sample and a test sample.
+    This function calculates the drift magnitude between two samples using a log likelihood
+    approach and estimates the statistical significance of the drift using permutation testing.
+    Results can optionally be saved to a JSON file.
+    
+    Parameters
+    ----------
+        reference_sample (np.ndarray): The reference sample data.
+        test_sample (np.ndarray): The test sample data.
+        filename (str): Path to the file where results will be saved. If empty, results are not saved.
+        K (int, optional): Number of permutations to perform for significance testing. Defaults to 1000.
+        n_jobs (int, optional): Number of parallel jobs to use for permutation testing. Defaults to 10.
+        alpha (float, optional): Regularization parameter for the log likelihood calculation. Defaults to 1e-12.
+    
+    Returns
+    -------
+    dict
+        A dictionary containing the following keys:
+            - "magnitude" (float): The calculated log likelihood drift magnitude.
+            - "p_value" (float): The p-value indicating the statistical significance of the drift.
+    """
     if filename=="": filename=None
 
     logger.debug("Running log likelihood drift detection.")

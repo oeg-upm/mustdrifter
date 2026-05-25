@@ -20,10 +20,94 @@ from .drift import cos_drift, ks_drift, mmd_drift, js_drift, kl_drift, log_likel
 from .report import get_drift_tables, generate_magnitude_heatmaps, plot_aggregated_dimension_values_heatmap
 
 class MuSTDrifter:
-    """ Multi-Source Temporal Drifter 
+    """
+    Multi-Source Temporal Drifter for multidimensional discourse drift analysis.
+
+    `MuSTDrifter` provides a unified interface to generate discourse
+    representations, calculate drift between temporal periods, and produce
+    reports and visualizations. It supports semantic, lexical, thematic,
+    syntactic content, and syntactic style dimensions.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Input dataset containing the documents to analyze.
+    df_name : str
+        Dataset name used to define output paths and filenames.
+    results_path : str
+        Base directory where generated data, drift results, and reports are
+        stored.
+    n_jobs : int, optional
+        Number of parallel jobs used during computation. Defaults to 20.
+    K : int, optional
+        Number of permutations or samples used in drift calculations.
+        Defaults to 100.
+    device : str, optional
+        Computational device used for processing, such as `"cuda"` or
+        `"cpu"`. Defaults to `"cuda"`.
+
+    Attributes
+    ----------
+    df : pandas.DataFrame
+        Input dataset.
+    df_name : str
+        Dataset name.
+    results_path : str
+        Base path for storing outputs.
+    pos_annotations : pandas.DataFrame
+        POS annotations generated for the dataset.
+    semantic_dimension : pandas.DataFrame
+        Semantic representation by period.
+    lexical_dimension : pandas.DataFrame
+        Lexical distribution by period.
+    thematic_dimension : pandas.DataFrame
+        Topic distribution by period.
+    syntax_content_dimension : pandas.DataFrame
+        Syntactic content distribution by period.
+    syntax_style_dimension : pandas.DataFrame
+        Syntactic style distribution by period.
+    report_drift_tables : dict
+        Drift tables used for reporting.
+    logger : logging.Logger
+        Logger used by the framework.
+
+    Notes
+    -----
+    The input dataframe is expected to contain at least a text column and a
+    period identifier column. Generated dimensions and drift results are
+    stored under the configured `results_path`.
     """
 
     def __init__(self, df, df_name, results_path, n_jobs=20, K=100, device="cuda"):
+        """
+        Initialize the MuSTDrifter framework and configure the directory
+        structure used for storing generated data, results, and drift reports.
+
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            Input dataframe to be analyzed.
+        df_name : str
+            Name of the dataframe. Used to generate directory paths and
+            output filenames.
+        results_path : str
+            Base directory where results and intermediate files are stored.
+        n_jobs : int, optional
+            Number of parallel jobs used during computation.
+            Defaults to 20.
+        K : int, optional
+            Parameter controlling the number of iterations or samples used
+            during analysis. Defaults to 100.
+        device : str, optional
+            Computational device used for processing, such as `"cuda"` or
+            `"cpu"`. Defaults to `"cuda"`.
+
+        Notes
+        -----
+        This constructor initializes the internal directory structure required
+        to store generated representations, drift results, and reports.
+        """
+        
         self.df = df
         self.df_name = df_name
         self.results_path = results_path
@@ -136,36 +220,160 @@ class MuSTDrifter:
 
     ### Dimension Loaders   
     def load_syntax_content_dimension(self, period_id):
+        """
+        Load syntactic content dimension data for a given period.
+
+        Parameters
+        ----------
+        period_id : str
+            Identifier of the period to load.
+
+        Returns
+        -------
+        numpy.ndarray
+            Syntactic content dimension data loaded from a `.npy` file.
+
+        Notes
+        -----
+        The file is loaded from `self.syntax_content_data_path` using
+        `period_id` as filename.
+        """
+
+        
         _path= f'{self.syntax_content_data_path}/{period_id}.npy'
         self.logger.debug(f"Syntax content dimension loaded from {_path}")
         with open(_path, 'rb') as f:
             return np.load(f)
     
     def load_syntax_style_dimension(self, period_id):
+        """
+        Load syntactic style dimension data for a given period.
+
+        Parameters
+        ----------
+        period_id : str
+            Identifier of the period to load.
+
+        Returns
+        -------
+        numpy.ndarray
+            Syntactic style dimension data loaded from a `.npy` file.
+
+        Notes
+        -----
+        The file is loaded from `self.syntax_style_data_path` using
+        `period_id` as filename.
+        """
+
+        
         _path= f'{self.syntax_style_data_path}/{period_id}.npy'
         self.logger.debug(f"Syntax style dimension loaded from {_path}")
         with open(_path, 'rb') as f:
             return np.load(f)
     
     def load_lexical_dimension(self, period_id):
+        """
+        Load lexical dimension data for a given period.
+
+        Parameters
+        ----------
+        period_id : str
+            Identifier of the period to load.
+
+        Returns
+        -------
+        numpy.ndarray
+            Lexical dimension data loaded from a `.npy` file.
+
+        Notes
+        -----
+        The file is loaded from `self.lexical_data_path` using `period_id`
+        as filename.
+        """
+        
         _path= f'{self.lexical_data_path}/{period_id}.npy'
         self.logger.debug(f"Lexical dimension loaded from {_path}")
         with open(_path, 'rb') as f:
             return np.load(f)
 
     def load_semantic_dimension(self, period_id):
+        """
+        Load semantic dimension data for a given period.
+
+        Parameters
+        ----------
+        period_id : str
+            Identifier of the period to load.
+
+        Returns
+        -------
+        numpy.ndarray
+            Semantic dimension data loaded from a `.npy` file.
+
+        Notes
+        -----
+        The file is loaded from `self.semantic_data_path` using `period_id`
+        as filename.
+        """
+        
         _path= f'{self.semantic_data_path}/{period_id}.npy'
         self.logger.debug(f"Semantic dimension loaded from {_path}")
         with open(_path, 'rb') as f:
             return np.load(f)
     
     def load_thematic_dimension(self, period_id):
+        """
+        Load thematic dimension data for a given period.
+
+        Parameters
+        ----------
+        period_id : str
+            Identifier of the period to load.
+
+        Returns
+        -------
+        numpy.ndarray
+            Thematic dimension data loaded from a `.npy` file.
+
+        Notes
+        -----
+        The file is loaded from `self.thematic_data_path` using `period_id`
+        as filename.
+        """
+        
         _path= f'{self.thematic_data_path}/{period_id}.npy'
         self.logger.debug(f"Thematic dimension loaded from {_path}")
         with open(_path, 'rb') as f:
             return np.load(f)
     
     def load_dimension_names(self, dimension):
+        """
+        Load feature names for a given dimension.
+
+        Parameters
+        ----------
+        dimension : str
+            Dimension whose feature names should be loaded. Must be one of
+            `"syntax_content"`, `"syntax_style"`, `"lexical"`, `"semantic"`,
+            or `"thematic"`.
+
+        Returns
+        -------
+        dict
+            Dictionary containing the feature names associated with the
+            selected dimension.
+
+        Raises
+        ------
+        ValueError
+            If `dimension` is not a recognized dimension.
+
+        Notes
+        -----
+        Feature names are loaded from the `dimensions_names.json` file stored
+        in the corresponding dimension directory.
+        """
+        
         dimension_names_file= "dimensions_names.json"
         if dimension == "syntax_content":
             path= f"{self.syntax_content_data_path}/{dimension_names_file}"
@@ -187,30 +395,145 @@ class MuSTDrifter:
     
     ### Drift Loaders
     def load_syntax_content_drift(self, reference_period, test_period, metric):
+        """
+        Load syntactic content drift results between two periods.
+
+        Parameters
+        ----------
+        reference_period : str
+            Reference period identifier.
+        test_period : str
+            Test period identifier.
+        metric : str
+            Drift metric used to compute the results.
+
+        Returns
+        -------
+        dict
+            Syntactic content drift results loaded from a JSON file.
+
+        Notes
+        -----
+        The file is loaded from `self.syntax_content_drift_path` using
+        the naming convention
+        `{reference_period}_{test_period}_{metric}.json`.
+        """
         _path = f"{self.syntax_content_drift_path}/{reference_period}_{test_period}_{metric}.json"
         self.logger.debug(f"Syntax content drift loaded from {_path}")
         with open(_path, "r", encoding="utf-8") as f:
             return json.load(f)
 
     def load_syntax_style_drift(self, reference_period, test_period, metric):
+        """
+        Load syntactic style drift results between two periods.
+
+        Parameters
+        ----------
+        reference_period : str
+            Reference period identifier.
+        test_period : str
+            Test period identifier.
+        metric : str
+            Drift metric used to compute the results.
+
+        Returns
+        -------
+        dict
+            Syntactic style drift results loaded from a JSON file.
+
+        Notes
+        -----
+        The file is loaded from `self.syntax_style_drift_path` using
+        the naming convention
+        `{reference_period}_{test_period}_{metric}.json`.
+        """
         _path = f"{self.syntax_style_drift_path}/{reference_period}_{test_period}_{metric}.json"
         self.logger.debug(f"Syntax style drift loaded from {_path}")
         with open(_path, "r", encoding="utf-8") as f:
             return json.load(f)
 
     def load_lexical_drift(self, reference_period, test_period, metric):
+        """
+        Load lexical drift results between two periods.
+
+        Parameters
+        ----------
+        reference_period : str
+            Reference period identifier.
+        test_period : str
+            Test period identifier.
+        metric : str
+            Drift metric used to compute the results.
+
+        Returns
+        -------
+        dict
+            Lexical drift results loaded from a JSON file.
+
+        Notes
+        -----
+        The file is loaded from `self.lexical_drift_path` using
+        the naming convention
+        `{reference_period}_{test_period}_{metric}.json`.
+        """
         _path = f"{self.lexical_drift_path}/{reference_period}_{test_period}_{metric}.json"
         self.logger.debug(f"Lexical drift loaded from {_path}")
         with open(_path, "r", encoding="utf-8") as f:
             return json.load(f)
 
     def load_semantic_drift(self, reference_period, test_period, metric):
+        """
+        Load semantic drift results between two periods.
+
+        Parameters
+        ----------
+        reference_period : str
+            Reference period identifier.
+        test_period : str
+            Test period identifier.
+        metric : str
+            Drift metric used to compute the results.
+
+        Returns
+        -------
+        dict
+            Semantic drift results loaded from a JSON file.
+
+        Notes
+        -----
+        The file is loaded from `self.semantic_drift_path` using
+        the naming convention
+        `{reference_period}_{test_period}_{metric}.json`.
+        """
         _path = f"{self.semantic_drift_path}/{reference_period}_{test_period}_{metric}.json"
         self.logger.debug(f"Semantic drift loaded from {_path}")
         with open(_path, "r", encoding="utf-8") as f:
             return json.load(f)
 
     def load_thematic_drift(self, reference_period, test_period, metric):
+        """
+        Load thematic drift results between two periods.
+
+        Parameters
+        ----------
+        reference_period : str
+            Reference period identifier.
+        test_period : str
+            Test period identifier.
+        metric : str
+            Drift metric used to compute the results.
+
+        Returns
+        -------
+        dict
+            Thematic drift results loaded from a JSON file.
+
+        Notes
+        -----
+        The file is loaded from `self.thematic_drift_path` using
+        the naming convention
+        `{reference_period}_{test_period}_{metric}.json`.
+        """
         _path = f"{self.thematic_drift_path}/{reference_period}_{test_period}_{metric}.json"
         self.logger.debug(f"Thematic drift loaded from {_path}")
         with open(_path, "r", encoding="utf-8") as f:
@@ -839,8 +1162,7 @@ class MuSTDrifter:
 
         return fig
     ###
-    
-    
+
     def report_heatmaps(self, periods=None, export=True, aggregate_by=None, **kwargs):
         if periods is None:
             periods = self.df["period_id"].dropna().unique().tolist()
@@ -861,8 +1183,7 @@ class MuSTDrifter:
         )
         
         generate_magnitude_heatmaps(tables, base_filename=f"{self.report_path}/{self.df_name}", export=export, **kwargs)
-        
-        
+
     def report_aggregated_heatmap(self, periods=None, export=True, aggregate_by="metric", **kwargs):
         if periods is None:
             periods = self.df["period_id"].dropna().unique().tolist()
@@ -883,5 +1204,3 @@ class MuSTDrifter:
         )
         
         plot_aggregated_dimension_values_heatmap(tables, filename=f"{self.report_path}/{self.df_name}_aggregated_dimensions.svg", export=export, **kwargs)
-        
-        

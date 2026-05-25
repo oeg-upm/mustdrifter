@@ -109,6 +109,56 @@ def generate_magnitude_heatmaps(
     title="",
     **kwargs
 ):
+    
+    """
+    Generate heatmaps to visualize drift magnitude from meta tables.
+
+    This function supports three input structures: a single DataFrame,
+    a dictionary mapping dimensions to DataFrames, or a nested dictionary
+    mapping dimensions and metrics to DataFrames.
+
+    Parameters
+    ----------
+    meta_tables : pandas.DataFrame or dict
+        Input data used to generate heatmaps. Supported formats are:
+
+        - A single DataFrame.
+        - A dictionary with dimensions as keys and DataFrames as values.
+        - A nested dictionary with dimensions as keys, metrics as sub-keys,
+        and DataFrames as values.
+
+    export : bool, optional
+        Whether to export the generated heatmaps as SVG files.
+        Defaults to True.
+    period_labels : list, optional
+        Labels applied to the table periods. Defaults to None.
+    base_filename : str, optional
+        Base filename used when exporting heatmaps. Defaults to an empty string.
+    figsize : tuple, optional
+        Figure size in inches. Defaults to (8, 6).
+    cmap : str, optional
+        Colormap used for the heatmaps. Defaults to "RdYlGn_r".
+    fmt : str, optional
+        Format used for heatmap cell annotations. Defaults to ".3f".
+    title : str, optional
+        Title used for the generated heatmaps. Defaults to an empty string.
+    **kwargs
+        Additional keyword arguments.
+
+    Returns
+    -------
+    matplotlib.figure.Figure or dict or None
+        Generated heatmap figure or figures.
+
+        - A single Figure if `meta_tables` is a DataFrame.
+        - A dictionary of Figures if `meta_tables` is a dictionary.
+        - None if `meta_tables` is empty or has an unsupported structure.
+
+    Notes
+    -----
+    - This function applies period labels using `_apply_period_labels` and generates each heatmap using `_plot_heatmap`.
+    - Warnings are logged for empty tables, invalid tables, or unsupported `meta_tables` structures.
+    """
     titles_dimension = {
         "semantic": "Semantic Drift",
         "syntactic_content": "Syntactic Content Drift",
@@ -234,6 +284,65 @@ def plot_aggregated_dimension_values_heatmap(
     export= False,
     **kwargs
 ):
+    """
+    Plot a heatmap to visualize multidimensional discourse drift across
+    dimensions and periods.
+
+    This function generates a heatmap where each cell represents the drift
+    score between two periods for different dimensions. The heatmap supports
+    customization of labels, colormaps, displayed values, and export options.
+
+    Parameters
+    ----------
+    tables : dict
+        Dictionary where keys are dimension names and values are pandas
+        DataFrames containing drift scores. DataFrame indices and columns
+        represent periods.
+    period_labels : dict, optional
+        Mapping between period identifiers and display labels.
+        Defaults to None.
+    dimensions_order : list, optional
+        Order of dimensions displayed in the heatmap. If None, uses the
+        order of `tables.keys()`. Defaults to None.
+    dimension_labels : dict, optional
+        Mapping between dimension names and full display labels.
+        Defaults to predefined labels.
+    dimension_short_names : dict, optional
+        Mapping between dimension names and abbreviated labels.
+        Defaults to predefined short names.
+    title : str, optional
+        Heatmap title. Defaults to
+        "Multidimensional discourse drift by dimension".
+    cmap_name : str, optional
+        Name of the matplotlib colormap. Defaults to "RdYlGn_r".
+    figsize : tuple, optional
+        Figure size in inches. Defaults to (26, 8).
+    filename : str, optional
+        Output file path used when exporting the heatmap.
+        Defaults to None.
+    show_values : bool, optional
+        Whether to display drift values inside heatmap cells.
+        Defaults to True.
+    export : bool, optional
+        Whether to export the heatmap to a file.
+        Defaults to False.
+    **kwargs
+        Additional keyword arguments for customization.
+
+    Returns
+    -------
+    tuple
+        Tuple containing the matplotlib Figure and Axes objects.
+
+    Notes
+    -----
+    - Drift scores are expected to be normalized between 0 and 1.
+    - Diagonal cells comparing the same period are displayed with a dash
+    ("—").
+    - If `export` is True and `filename` is provided, the heatmap is
+    exported as an SVG file.
+    """
+    
     if dimensions_order is None:
         dimensions_order = list(tables.keys())
 

@@ -76,6 +76,31 @@ def run_mmd_permutation(
     return int(permutation_drift_magnitude >= drift_magnitude)
 
 def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
+    """
+    Perform Maximum Mean Discrepancy (MMD) drift detection between a reference sample and a test sample.
+    This function calculates the drift magnitude and significance (p-value) using the MMD method with an RBF kernel.
+    It supports saving intermediate results to a file for backup and resuming computations if interrupted.
+    
+    Parameters
+    ----------
+        reference_sample (np.ndarray): The reference sample data.
+        test_sample (np.ndarray): The test sample data to compare against the reference.
+        filename (str): Path to the JSON file where results will be saved. If empty, no file will be created.
+        K (int, optional): Number of permutations for significance testing. Defaults to 100.
+        n_jobs (int, optional): Number of parallel jobs for permutation testing. Defaults to 10.
+    
+    Raises
+    ------
+    RuntimeError
+        If some permutations are not completed.
+    
+    Returns
+    -------
+    dict
+        A dictionary containing the drift magnitude and p-value:
+            - "magnitude" (float): The calculated drift magnitude.
+            - "p_value" (float): The p-value indicating the significance of the drift.
+    """
     if filename=="": filename=None
 
     logger.debug("Running MMD drift detection.")
@@ -243,6 +268,35 @@ def run_cos_permutation(
 
 
 def cos_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
+    """
+    Detects drift between a reference sample and a test sample using cosine similarity.
+    This function calculates the cosine drift magnitude between the reference and test samples
+    and performs a permutation test to assess the statistical significance of the drift. The
+    results, including the drift magnitude and p-value, are saved to a JSON file.
+    
+    Parameters
+    ----------
+        reference_sample (np.ndarray): The reference sample data.
+        test_sample (np.ndarray): The test sample data.
+        filename (str): Path to the JSON file where results will be saved. If empty, no file is saved.
+        K (int, optional): Number of permutations for significance testing. Defaults to 100.
+        n_jobs (int, optional): Number of parallel jobs for permutation testing. Defaults to 10.
+    
+    Raises
+    ------
+    ValueError
+        If the backup file exists but the number of permutations does not match K.
+    RuntimeError
+        If some permutations are not completed.
+    
+    Returns
+    -------
+    dict
+        A dictionary containing the following keys:
+            - "magnitude" (float): The calculated cosine drift magnitude.
+            - "p_value" (float): The p-value from the permutation test.
+    """
+    
     if filename=="": filename=None
 
     logger.debug("Running cosine drift detection.")
@@ -348,7 +402,7 @@ def run_parallel_permutations(
     Generic async parallel execution engine with immediate task replenishment.
 
     Parameters
-    ----------
+    ----------------
     worker_fn : callable
         Function with signature worker_fn(item, *worker_args).
     pending_items : list[int]

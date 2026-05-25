@@ -34,36 +34,51 @@ def get_syntactic_content_distribution(
     **kwargs
 ):
     """
-    Compute the probability distribution of syntactic content rules by period.
+    Calculate syntactic content distributions from UPOS-based rules.
 
-    A rule is defined as any permutation of the UPOS tags in `allowed_upos`.
-    For each document, a rule is considered present if it appears as an
-    ordered non-contiguous subsequence in the document's UPOS sequence.
+    This function computes the distribution of syntactic content rules across
+    periods using Universal Part-of-Speech (UPOS) annotations. A rule is
+    defined as a permutation of the UPOS tags in `allowed_upos`. For each
+    document, a rule is considered present if it appears as an ordered,
+    non-contiguous subsequence in the document's UPOS sequence.
 
     Parameters
     ----------
-    pos_annotations : pd.DataFrame
-        DataFrame of Stanza POS annotations with at least:
-        - doc_id
-        - id
-        - upos
+    pos_annotations : pandas.DataFrame
+        DataFrame containing Stanza POS annotations. It must include at least
+        the following columns:
 
-    docs_df : pd.DataFrame
-        DataFrame with at least:
-        - doc_id
-        - period_id
+        - `"doc_id"`: document identifier.
+        - `"id"`: token-level identifier within the document.
+        - `"upos"`: UPOS tag for the token.
 
-    allowed_upos : list[str] | None, optional
-        UPOS tags used to build the rules. If None, defaults to:
-        ["NOUN", "PRON", "VERB", "ADV", "ADJ", "DET"]
+    docs_df : pandas.DataFrame
+        DataFrame containing document metadata. It must include at least the
+        following columns:
+
+        - `"doc_id"`: document identifier.
+        - `"period_id"`: period identifier.
+
+    allowed_upos : list[str], optional
+        UPOS tags used to build syntactic content rules.
+        Defaults to `["NOUN", "PRON", "VERB", "ADV", "ADJ", "DET"]`.
+    **kwargs
+        Additional keyword arguments.
 
     Returns
     -------
-    pd.DataFrame
-        DataFrame with:
-        - first column: period_id
-        - one column per rule, sorted alphabetically
-        - values: probability distribution over rules within each period
+    pandas.DataFrame
+        DataFrame representing the syntactic content distribution.
+
+        The DataFrame contains one row per period, a `"period_id"` column,
+        and one column per rule. Rule columns are sorted alphabetically, and
+        values represent normalized rule probabilities within each period.
+
+    Notes
+    -----
+    - If `pos_annotations` is empty, the function returns an empty DataFrame with the expected column structure.
+    - Rules are generated as all permutations of the UPOS tags in `allowed_upos`.
+    - Probabilities are normalized within each period.
     """
     logger.debug("Calculating syntactic content dimension...")
 
@@ -144,18 +159,38 @@ def get_syntactic_style_distribution(
     **kwargs
 ):
     """
-    Compute conditional probabilities of UPOS tags:
-        P(next_upos | previous `context_size` UPOS tags)
+    Compute the syntactic style distribution based on UPOS (Universal Part-of-Speech) tag sequences.
 
-    Contexts with fewer than `min_count` global occurrences
-    are removed.
+    This function calculates the conditional probabilities of a UPOS tag occurring given a specific 
+    context of preceding UPOS tags. The context size and minimum occurrence threshold for contexts 
+    can be customized. Contexts with fewer than `min_count` global occurrences are excluded from 
+    the computation.
+
+    Parameters
+    ----------
+        pos_annotations : pd.DataFrame
+            DataFrame containing UPOS annotations with at least the columns "doc_id", "id", and "upos".
+        docs_df : pd.DataFrame
+            DataFrame containing document metadata with at least the columns "doc_id" and "period_id".
+        context_size : int, optional 
+            The number of preceding UPOS tags to consider as context. Defaults to 4.
+        min_count : int, optional
+            The minimum number of global occurrences required for a context to be included. Defaults to 4.
+        **kwargs
+            Additional keyword arguments (not used in the current implementation).
 
     Returns
     -------
     pd.DataFrame
-        Wide-format DataFrame with:
-        - one row per period_id
-        - one column per conditional probability P(next_upos|context)
+        A wide-format DataFrame where:
+            - Each row corresponds to a unique `period_id`.
+            - Each column represents a conditional probability of the form P(next_upos|context).
+            - The values are the computed probabilities, with missing values filled with 0.0.
+
+    Notes
+    -----
+    - If the input DataFrame `pos_annotations` is empty or no valid contexts are found, an empty DataFrame with only the "period_id" column is returned.
+    - The resulting DataFrame is sorted by `period_id` and the conditional probability columns are sorted alphabetically.
     """
     df = pos_annotations.merge(
         docs_df[["doc_id", "period_id"]],
@@ -351,6 +386,43 @@ def get_lexical_distribution(
     allowed_upos=["NOUN", "VERB", "ADV", "ADJ"],
     **kwargs
 ):
+    """
+    Calculate lexical distributions from part-of-speech annotations.
+
+    This function computes the distribution of lexical items across periods
+    using POS annotations and document metadata. Frequencies are normalized
+    within each period to obtain probability distributions.
+
+    Parameters
+    ----------
+    pos_annotations : pandas.DataFrame
+        DataFrame containing POS annotations. It must include at least
+        the columns `"doc_id"`, `"upos"`, and either `"lemma"` or `"text"`.
+    docs_df : pandas.DataFrame
+        DataFrame containing document metadata. It must include at least
+        the columns `"doc_id"` and `"period_id"`.
+    allowed_upos : list, optional
+        Universal POS tags included in the lexical distribution.
+        Defaults to `["NOUN", "VERB", "ADV", "ADJ"]`.
+    **kwargs
+        Additional keyword arguments.
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame representing the lexical distributions.
+
+        Each row corresponds to a period and each column corresponds to a
+        lexical item. Values represent normalized lexical frequencies within
+        each period.
+
+    Notes
+    -----
+    - The POS annotations are merged with the document metadata to associate each annotation with its corresponding period.
+    - Only annotations whose UPOS tags are included in `allowed_upos` are considered.
+    - Lexical frequencies are normalized by row sums so that each period distribution sums to 1.
+    - The resulting DataFrame is sorted by column names for consistent ordering.
+    """
     lexical_column= "lemma" # can be changed to "text" if we want to use the original word forms instead of lemmas
 
     logger.debug("Calculating lexical distribution...")

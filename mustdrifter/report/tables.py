@@ -130,6 +130,69 @@ def get_drift_tables(
     normalize="minmax",
     **kwargs,
 ):
+    
+    
+    """
+    Generate drift tables for specified dimensions and metrics.
+
+    This function computes drift tables for given dimensions and metrics using
+    the provided drift loaders. It supports aggregation, normalization, and
+    filtering of the results.
+
+    Parameters
+    ----------
+    dimension_drift_loaders : dict
+        Dictionary mapping dimensions to their respective drift loading functions.
+    periods : list, optional
+        Periods to consider. Defaults to None.
+    dimensions : list, optional
+        Dimensions to include. If None, all dimensions in
+        `dimension_drift_loaders` are used. Defaults to None.
+    metrics : list, optional
+        Metrics to compute. Defaults to
+        ["mmd", "cos", "ks", "kl", "js", "log"].
+    semantic_score_key : str, optional
+        Key for semantic scores in drift data. Defaults to "magnitude".
+    syntactic_content_score_key : str, optional
+        Key for syntactic content scores in drift data. Defaults to "magnitude".
+    syntactic_style_score_key : str, optional
+        Key for syntactic style scores in drift data. Defaults to "magnitude".
+    lexical_score_key : str, optional
+        Key for lexical scores in drift data. Defaults to "magnitude".
+    thematic_score_key : str, optional
+        Key for thematic scores in drift data. Defaults to "magnitude".
+    fill_diagonal : float, optional
+        Value used to fill the diagonal of the tables. Defaults to np.nan.
+    sort_periods : bool, optional
+        Whether to sort periods before generating tables. Defaults to True.
+    aggregate_by : {None, "metric", "dimension"}, optional
+        Aggregation level. Defaults to None.
+    aggregation_func : callable, optional
+        Function used for aggregation. Defaults to np.nanmean.
+    absolute_values : bool, optional
+        Whether to use absolute values for scores. Defaults to True.
+    min_values : int, optional
+        Minimum number of values required for aggregation. Defaults to 1.
+    normalize : {None, "minmax", "zscore"}, optional
+        Normalization method. Defaults to "minmax".
+    **kwargs
+        Additional keyword arguments.
+
+    Returns
+    -------
+    dict or pandas.DataFrame
+        Dictionary of drift tables grouped by dimension and metric, or an
+        aggregated table depending on `aggregate_by`.
+
+    Raises
+    ------
+    ValueError
+        If invalid dimensions are provided.
+    ValueError
+        If `aggregate_by` is not one of None, "metric", or "dimension".
+    ValueError
+        If `normalize` is not one of None, "minmax", or "zscore".
+    """
     score_keys_mapping = {
         "semantic": semantic_score_key,
         "syntactic_content": syntactic_content_score_key,

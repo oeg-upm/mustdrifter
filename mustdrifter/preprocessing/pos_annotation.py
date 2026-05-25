@@ -80,7 +80,32 @@ def get_pipeline(lang, device="cuda"):
         logger.debug(f"Stanza pipeline for language {lang} initialized: {PIPELINES[lang] is not None}")
     return PIPELINES[lang]
 
-def annotate_pos(dataset, dataset_name, device="cuda"):   
+def annotate_pos(dataset, dataset_name, device="cuda"):
+    """
+    Annotates parts of speech (POS) for a given dataset.
+
+    This function processes a dataset by detecting the language of each document, 
+    and then annotates parts of speech (POS) tags for each language group using 
+    a language-specific POS tagger. The annotated dataset and POS tags are saved 
+    to CSV files if a dataset name is provided.
+    
+    Parameters
+    ----------
+        dataset (pd.DataFrame): The input dataset containing at least a "content" column 
+            with text data to be processed.
+        dataset_name (str): The name of the dataset, used for saving the output files. 
+            If None, the results are not saved to files.
+        device (str, optional): The device to use for processing (e.g., "cuda" or "cpu"). 
+            Defaults to "cuda".
+    
+    Returns
+    -------
+    tuple
+        A tuple containing:
+            - pd.DataFrame: The input dataset with additional columns for document ID, 
+              content (processed), and detected language.
+            - pd.DataFrame: A DataFrame containing the POS annotations for the dataset.
+    """
     dataset["doc_id"]=   dataset.index
     dataset["content"]=  dataset["content"].astype(str).apply(remove_emojis)
     dataset["lang"]=     dataset["content"].apply(detect_lang)
