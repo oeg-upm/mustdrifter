@@ -1,0 +1,44 @@
+site_name: MuSTDrifter
+
+# use_directory_urls: false
+
+theme:
+  name: material
+  logo: assets/logo.svg
+
+repo_url: https://github.com/iguillenp/mustdrifter
+repo_name: iguillenp/mustdrifter
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths:
+            - .
+            - mustdrifter.drift
+            - mustdrifter.report
+          options:
+            members_order: source
+            show_source: false
+            inherited_members: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_signature_annotations: true
+            docstring_style: numpy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Quickstart: quickstart.md
+  - MuSTDrifter: mustdrifter.md
+  - API:
+    - Preprocessing: preprocessing.md
+    - Drift: drift.md
+    - Report: report.md
