@@ -542,6 +542,23 @@ class MuSTDrifter:
     
     ### Generators
     def generate_syntax_content_dimension(self, **kwargs):
+        """
+        Generate syntactic content representations for all periods.
+
+        This method computes syntactic content distributions from POS
+        annotations and exports the resulting representations to disk.
+
+        Parameters
+        ----------
+        **kwargs
+            Additional keyword arguments passed to
+            `get_syntactic_content_distribution`.
+
+        Notes
+        -----
+        POS annotations are automatically generated if they are not already
+        available.
+        """
         self.logger.info("Generating syntactic content dimension...")
         self._require_pos_annotations()
 
@@ -552,6 +569,23 @@ class MuSTDrifter:
         self.logger.info("Syntactic content features exported.")
         
     def generate_syntax_style_dimension(self, **kwargs):
+        """
+        Generate syntactic style representations for all periods.
+
+        This method computes syntactic style distributions from POS
+        annotations and exports the resulting representations to disk.
+
+        Parameters
+        ----------
+        **kwargs
+            Additional keyword arguments passed to
+            `get_syntactic_style_distribution`.
+
+        Notes
+        -----
+        POS annotations are automatically generated if they are not already
+        available.
+        """
         self.logger.info("Generating syntactic style dimension...")
         self._require_pos_annotations()
 
@@ -562,6 +596,23 @@ class MuSTDrifter:
         self.logger.info("Syntactic style features exported.")
 
     def generate_lexical_dimension(self, **kwargs):
+        """
+        Generate lexical representations for all periods.
+
+        This method computes lexical distributions from POS annotations and
+        exports the resulting representations to disk.
+
+        Parameters
+        ----------
+        **kwargs
+            Additional keyword arguments passed to
+            `get_lexical_distribution`.
+
+        Notes
+        -----
+        POS annotations are automatically generated if they are not already
+        available.
+        """
         self.logger.info("Generating lexical dimension...")
         self._require_pos_annotations()
         
@@ -572,6 +623,22 @@ class MuSTDrifter:
         self.logger.info("Lexical features exported.")
 
     def generate_semantic_dimension(self, **kwargs):
+        """
+        Generate semantic representations for all periods.
+
+        This method computes semantic embeddings for the documents grouped by
+        period and exports the resulting vectors as `.npy` files.
+
+        Parameters
+        ----------
+        **kwargs
+            Additional keyword arguments used during embedding generation.
+
+        Notes
+        -----
+        The encoder is automatically initialized if it has not been loaded.
+        Embeddings are generated independently for each period.
+        """
         self.logger.info("Generating embeddings...")
         if self.encode is None:
             self.logger.debug("Encoder not initialized. Initializing now...")
@@ -590,6 +657,23 @@ class MuSTDrifter:
         self.logger.info("All embeddings generated and saved.")
 
     def generate_thematic_dimension(self, **kwargs):
+        """
+        Generate thematic representations for all periods.
+
+        This method computes topic distributions using BERTopic and exports
+        the resulting thematic representations to disk.
+
+        Parameters
+        ----------
+        **kwargs
+            Additional keyword arguments passed to
+            `get_thematic_dimension`.
+
+        Notes
+        -----
+        Outlier topics labeled as `-1` are automatically removed from the
+        exported distributions.
+        """
         self.logger.info("Generating thematic dimension...")
         self.thematic_dimension= get_thematic_dimension(self.df, **kwargs)
         self.thematic_dimension = self.thematic_dimension.drop(columns=[-1, "-1"], errors="ignore")
@@ -599,6 +683,27 @@ class MuSTDrifter:
         self.logger.info("Thematic features exported.")
 
     def generate_drift_dimensions(self, dimensions=["semantic", "syntactic_content", "syntactic_style", "lexical", "thematic"], **kwargs):
+        """
+        Generate discourse representations for the selected dimensions.
+
+        Parameters
+        ----------
+        dimensions : list, optional
+            Dimensions to generate. Supported dimensions are
+            `"semantic"`, `"syntactic_content"`,
+            `"syntactic_style"`, `"lexical"`, and `"thematic"`.
+
+            Defaults to all available dimensions.
+        **kwargs
+            Additional keyword arguments passed to the corresponding
+            dimension generators.
+
+        Notes
+        -----
+        Each selected dimension is generated independently and exported to
+        the corresponding storage directory.
+        """
+
         self.logger.info(f"Generating {dimensions} dimensions for drift detection...")
 
         if "syntactic_content" in dimensions:
@@ -695,6 +800,26 @@ class MuSTDrifter:
         return drift
 
     def calculate_semantic_drift(self, reference_period, test_period, metrics=["cos_drift", "mmd_drift", "ks_drift"], rebase=None):
+        """
+        Calculate semantic drift between two periods.
+
+        Parameters
+        ----------
+        reference_period : str
+            Reference period identifier.
+        test_period : str
+            Test period identifier.
+        metrics : list, optional
+            Drift metrics used for semantic comparison.
+            Defaults to `["cos_drift", "mmd_drift", "ks_drift"]`.
+        rebase : bool, optional
+            Whether to recompute existing drift results. Defaults to None.
+
+        Returns
+        -------
+        dict
+            Drift results indexed by metric.
+        """
         self.logger.debug(f"Calculating semantic drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_semantic_dimension(reference_period)
         test_sample= self.load_semantic_dimension(test_period)
@@ -703,6 +828,26 @@ class MuSTDrifter:
         return self._calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
         
     def calculate_syntactic_content_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=None):
+        """
+        Calculate syntactic content drift between two periods.
+
+        Parameters
+        ----------
+        reference_period : str
+            Reference period identifier.
+        test_period : str
+            Test period identifier.
+        metrics : list, optional
+            Drift metrics used for syntactic content comparison.
+            Defaults to `["js_drift", "kl_drift", "log_drift"]`.
+        rebase : bool, optional
+            Whether to recompute existing drift results. Defaults to None.
+
+        Returns
+        -------
+        dict
+            Drift results indexed by metric.
+        """
         self.logger.debug(f"Calculating syntactic content drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_syntax_content_dimension(reference_period)
         test_sample= self.load_syntax_content_dimension(test_period)
@@ -711,6 +856,37 @@ class MuSTDrifter:
         return self._calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
 
     def calculate_syntactic_style_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=None):
+        """
+        Calculate syntactic style drift between two periods.
+
+        This method computes drift over syntactic style sub-distributions
+        defined by UPOS contexts and aggregates the resulting drift scores
+        across valid contexts.
+
+        Parameters
+        ----------
+        reference_period : str
+            Reference period identifier.
+        test_period : str
+            Test period identifier.
+        metrics : list, optional
+            Drift metrics used for syntactic style comparison.
+            Defaults to `["js_drift", "kl_drift", "log_drift"]`.
+        rebase : bool, optional
+            Whether to recompute existing drift results. Defaults to None.
+
+        Returns
+        -------
+        dict or None
+            Drift results indexed by metric, or None if all requested results
+            already exist and `rebase` is not True.
+
+        Notes
+        -----
+        Syntactic style drift is computed independently for each valid
+        context distribution and then aggregated using summary statistics
+        such as mean, minimum, maximum, median, and standard deviation.
+        """
         self.logger.debug(f"Calculating syntactic style drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_syntax_style_dimension(reference_period)
         test_sample= self.load_syntax_style_dimension(test_period)
@@ -790,6 +966,26 @@ class MuSTDrifter:
         # return self._calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)  
 
     def calculate_lexical_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=None):
+        """
+        Calculate lexical drift between two periods.
+
+        Parameters
+        ----------
+        reference_period : str
+            Reference period identifier.
+        test_period : str
+            Test period identifier.
+        metrics : list, optional
+            Drift metrics used for lexical comparison.
+            Defaults to `["js_drift", "kl_drift", "log_drift"]`.
+        rebase : bool, optional
+            Whether to recompute existing drift results. Defaults to None.
+
+        Returns
+        -------
+        dict
+            Drift results indexed by metric.
+        """
         self.logger.debug(f"Calculating lexical drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_lexical_dimension(reference_period)
         test_sample= self.load_lexical_dimension(test_period)
@@ -798,6 +994,26 @@ class MuSTDrifter:
         return self._calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
 
     def calculate_thematic_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=None):
+        """
+        Calculate thematic drift between two periods.
+
+        Parameters
+        ----------
+        reference_period : str
+            Reference period identifier.
+        test_period : str
+            Test period identifier.
+        metrics : list, optional
+            Drift metrics used for thematic comparison.
+            Defaults to `["js_drift", "kl_drift", "log_drift"]`.
+        rebase : bool, optional
+            Whether to recompute existing drift results. Defaults to None.
+
+        Returns
+        -------
+        dict
+            Drift results indexed by metric.
+        """
         self.logger.debug(f"Calculating thematic drift between {reference_period} and {test_period} using metrics: {metrics}")
         reference_sample= self.load_thematic_dimension(reference_period)
         test_sample= self.load_thematic_dimension(test_period)
@@ -806,6 +1022,30 @@ class MuSTDrifter:
         return self._calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
 
     def calculate_drift(self, drift_dimensions=["semantic", "syntactic_content", "syntactic_style", "lexical", "thematic"], metrics= None,rebase=None):
+        """
+        Calculate drift for all ordered pairs of periods.
+
+        This method iterates over all pairs of different periods in the
+        dataset and computes drift for the selected dimensions.
+
+        Parameters
+        ----------
+        drift_dimensions : list, optional
+            Dimensions for which drift should be computed. Supported values
+            are `"semantic"`, `"syntactic_content"`, `"syntactic_style"`,
+            `"lexical"`, and `"thematic"`. Defaults to all dimensions.
+        metrics : list, optional
+            Drift metrics to use. If None, default metrics are selected for
+            each dimension. Defaults to None.
+        rebase : bool, optional
+            Whether to recompute existing drift results. Defaults to None.
+
+        Notes
+        -----
+        Semantic drift uses `["cos_drift", "mmd_drift", "ks_drift"]` by
+        default. Lexical, thematic, syntactic content, and syntactic style
+        drift use `["js_drift", "kl_drift", "log_drift"]` by default.
+        """
         self.logger.info("Calculating drift for all period pairs...")
 
         period_ids= self.df["period_id"].unique()
@@ -998,6 +1238,29 @@ class MuSTDrifter:
         period_labels=None,
         **kwargs
     ):
+        """
+        Generate a drift heatmap for a specific dimension and metric.
+
+        Parameters
+        ----------
+        dimension : str
+            Dimension to visualize.
+        metric : str
+            Drift metric to visualize.
+        export : bool, optional
+            Whether to export the heatmap as an SVG file. Defaults to True.
+        period_labels : dict, optional
+            Mapping between period identifiers and display labels.
+            Defaults to None.
+        **kwargs
+            Additional keyword arguments passed to
+            `_build_report_drift_tables`.
+
+        Returns
+        -------
+        matplotlib.figure.Figure or None
+            Generated heatmap figure, or None if the filtered table is empty.
+        """
         if self.report_drift_tables is None:
             self._build_report_drift_tables(**kwargs)
 
@@ -1081,6 +1344,21 @@ class MuSTDrifter:
         return fig
 
     def report_all_drift_heatmap(self, export=True, **kwargs):
+        """
+        Generate drift heatmaps for all available dimensions and metrics.
+
+        Parameters
+        ----------
+        export : bool, optional
+            Whether to export each heatmap as an SVG file. Defaults to True.
+        **kwargs
+            Additional keyword arguments passed to
+            `report_drift_heatmap`.
+
+        Notes
+        -----
+        Drift tables are rebuilt before generating the heatmaps.
+        """
         self._build_report_drift_tables(**kwargs)
 
         for dimension, metric_tables in self.report_drift_tables.items():
@@ -1088,6 +1366,28 @@ class MuSTDrifter:
                 self.report_drift_heatmap(dimension=dimension, metric=metric, export=export, **kwargs)
 
     def report_group_all_drift_heatmap(self, export=True):
+        """
+        Generate a grouped SVG report containing all drift heatmaps.
+
+        This method combines previously generated SVG heatmaps into a single
+        multi-panel SVG report organized by discourse dimension and metric.
+
+        Parameters
+        ----------
+        export : bool, optional
+            Whether to export the grouped SVG report. Defaults to True.
+
+        Returns
+        -------
+        svgutils.compose.Figure
+            Grouped SVG figure containing the available heatmaps.
+
+        Notes
+        -----
+        Individual heatmap SVG files are expected to exist in
+        `self.report_path` before this method is called.
+        """
+
         structure = {
             "semantic": ["mmd", "cos", "ks"],
             "lexical": ["js", "kl", "log"],
@@ -1164,6 +1464,26 @@ class MuSTDrifter:
     ###
 
     def report_heatmaps(self, periods=None, export=True, aggregate_by=None, **kwargs):
+        """
+        Generate drift magnitude heatmaps for selected periods.
+
+        Parameters
+        ----------
+        periods : list, optional
+            Period identifiers included in the heatmaps. If None, all periods
+            in the dataset are used. Defaults to None.
+        export : bool, optional
+            Whether to export the generated heatmaps. Defaults to True.
+        aggregate_by : {None, "metric", "dimension"}, optional
+            Aggregation level used to build the drift tables. Defaults to None.
+        **kwargs
+            Additional keyword arguments passed to `get_drift_tables` and
+            `generate_magnitude_heatmaps`.
+
+        Notes
+        -----
+        Drift results are loaded using the dimension-specific drift loaders.
+        """
         if periods is None:
             periods = self.df["period_id"].dropna().unique().tolist()
             
@@ -1185,6 +1505,28 @@ class MuSTDrifter:
         generate_magnitude_heatmaps(tables, base_filename=f"{self.report_path}/{self.df_name}", export=export, **kwargs)
 
     def report_aggregated_heatmap(self, periods=None, export=True, aggregate_by="metric", **kwargs):
+        """
+        Generate an aggregated drift heatmap across dimensions.
+
+        Parameters
+        ----------
+        periods : list, optional
+            Period identifiers included in the heatmap. If None, all periods
+            in the dataset are used. Defaults to None.
+        export : bool, optional
+            Whether to export the generated heatmap. Defaults to True.
+        aggregate_by : {"metric", "dimension"}, optional
+            Aggregation level used to build the drift table.
+            Defaults to "metric".
+        **kwargs
+            Additional keyword arguments passed to `get_drift_tables` and
+            `plot_aggregated_dimension_values_heatmap`.
+
+        Notes
+        -----
+        The generated heatmap is saved as
+        `{self.df_name}_aggregated_dimensions.svg` when `export` is True.
+        """
         if periods is None:
             periods = self.df["period_id"].dropna().unique().tolist()
             
