@@ -1,0 +1,1965 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../mustdrifter/">
+      
+      
+        <link rel="next" href="../drift/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Preprocessing - MuSTDrifter</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#preprocessing-for-drift-dimension-generation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="MuSTDrifter" class="md-header__button md-logo" aria-label="MuSTDrifter" data-md-component="logo">
+      
+  <img src="../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            MuSTDrifter
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Preprocessing
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/iguillenp/mustdrifter" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    iguillenp/mustdrifter
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="MuSTDrifter" class="md-nav__button md-logo" aria-label="MuSTDrifter" data-md-component="logo">
+      
+  <img src="../assets/logo.svg" alt="logo">
+
+    </a>
+    MuSTDrifter
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/iguillenp/mustdrifter" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    iguillenp/mustdrifter
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mustdrifter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MuSTDrifter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#mustdrifter.preprocessing.pos_annotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pos_annotation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="pos_annotation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mustdrifter.preprocessing.pos_annotation.annotate_pos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        annotate_pos
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mustdrifter.preprocessing.pos_distributions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pos_distributions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="pos_distributions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mustdrifter.preprocessing.pos_distributions.get_syntactic_content_distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_syntactic_content_distribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mustdrifter.preprocessing.pos_distributions.get_syntactic_style_distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_syntactic_style_distribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mustdrifter.preprocessing.pos_distributions.get_lexical_distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_lexical_distribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mustdrifter.preprocessing.topic_distributions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        topic_distributions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="topic_distributions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mustdrifter.preprocessing.topic_distributions.get_thematic_dimension" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_thematic_dimension
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mustdrifter.generators.TokenGenerator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TokenGenerator
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="TokenGenerator">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mustdrifter.generators.TokenGenerator.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mustdrifter.generators.TokenGenerator.tokenize_texts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        tokenize_texts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mustdrifter.generators.EmbeddingsGenerator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EmbeddingsGenerator
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="EmbeddingsGenerator">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mustdrifter.generators.EmbeddingsGenerator.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mustdrifter.generators.EmbeddingsGenerator.generate_embeddings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        generate_embeddings
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../drift/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Drift
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../report/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#mustdrifter.preprocessing.pos_annotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pos_annotation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="pos_annotation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mustdrifter.preprocessing.pos_annotation.annotate_pos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        annotate_pos
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mustdrifter.preprocessing.pos_distributions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pos_distributions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="pos_distributions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mustdrifter.preprocessing.pos_distributions.get_syntactic_content_distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_syntactic_content_distribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mustdrifter.preprocessing.pos_distributions.get_syntactic_style_distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_syntactic_style_distribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mustdrifter.preprocessing.pos_distributions.get_lexical_distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_lexical_distribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mustdrifter.preprocessing.topic_distributions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        topic_distributions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="topic_distributions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mustdrifter.preprocessing.topic_distributions.get_thematic_dimension" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_thematic_dimension
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mustdrifter.generators.TokenGenerator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TokenGenerator
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="TokenGenerator">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mustdrifter.generators.TokenGenerator.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mustdrifter.generators.TokenGenerator.tokenize_texts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        tokenize_texts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mustdrifter.generators.EmbeddingsGenerator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EmbeddingsGenerator
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="EmbeddingsGenerator">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mustdrifter.generators.EmbeddingsGenerator.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mustdrifter.generators.EmbeddingsGenerator.generate_embeddings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        generate_embeddings
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="preprocessing-for-drift-dimension-generation">Preprocessing for Drift Dimension Generation<a class="headerlink" href="#preprocessing-for-drift-dimension-generation" title="Permanent link">&para;</a></h1>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="mustdrifter.preprocessing.pos_annotation" class="doc doc-heading">
+            <code>pos_annotation</code>
+
+
+<a href="#mustdrifter.preprocessing.pos_annotation" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="mustdrifter.preprocessing.pos_annotation.annotate_pos" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">annotate_pos</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span></code>
+
+<a href="#mustdrifter.preprocessing.pos_annotation.annotate_pos" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Annotate part-of-speech (POS) information for a dataset.</p>
+<p>This function detects the language of each document and applies
+language-specific POS tagging pipelines to generate token-level POS
+annotations. Annotated datasets can optionally be exported to CSV files.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>dataset</code></td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Input dataset containing at least a <code>"content"</code> column with the
+documents to process.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>dataset_name</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Dataset name used to export the generated files. If None, results
+are not exported.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>device</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Computation device used during POS annotation, such as <code>"cpu"</code> or
+<code>"cuda"</code>. Defaults to <code>"cuda"</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;cuda&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>tuple</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Tuple containing:</p>
+<ul>
+<li><code>pd.DataFrame</code>: input dataset enriched with document identifiers,
+processed content, and detected language labels.</li>
+<li><code>pd.DataFrame</code>: token-level POS annotations.</li>
+</ul>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Language detection is performed before POS annotation in order to apply
+language-specific tagging pipelines.</p>
+<p>POS annotations are generated independently for each detected language
+group.</p>
+</details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="mustdrifter.preprocessing.pos_distributions" class="doc doc-heading">
+            <code>pos_distributions</code>
+
+
+<a href="#mustdrifter.preprocessing.pos_distributions" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="mustdrifter.preprocessing.pos_distributions.get_syntactic_content_distribution" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_syntactic_content_distribution</span><span class="p">(</span><span class="n">pos_annotations</span><span class="p">,</span> <span class="n">docs_df</span><span class="p">,</span> <span class="n">allowed_upos</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;NOUN&#39;</span><span class="p">,</span> <span class="s1">&#39;PRON&#39;</span><span class="p">,</span> <span class="s1">&#39;VERB&#39;</span><span class="p">,</span> <span class="s1">&#39;ADV&#39;</span><span class="p">,</span> <span class="s1">&#39;ADJ&#39;</span><span class="p">,</span> <span class="s1">&#39;DET&#39;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+<a href="#mustdrifter.preprocessing.pos_distributions.get_syntactic_content_distribution" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Calculate syntactic content distributions from UPOS-based rules.</p>
+<p>This function computes the distribution of syntactic content rules across
+periods using Universal Part-of-Speech (UPOS) annotations. A rule is
+defined as a permutation of the UPOS tags in <code>allowed_upos</code>. For each
+document, a rule is considered present if it appears as an ordered,
+non-contiguous subsequence in the document's UPOS sequence.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>pos_annotations</code></td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>DataFrame containing Stanza POS annotations. It must include at least
+the following columns:</p>
+<ul>
+<li><code>"doc_id"</code>: document identifier.</li>
+<li><code>"id"</code>: token-level identifier within the document.</li>
+<li><code>"upos"</code>: UPOS tag for the token.</li>
+</ul>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>docs_df</code></td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>DataFrame containing document metadata. It must include at least the
+following columns:</p>
+<ul>
+<li><code>"doc_id"</code>: document identifier.</li>
+<li><code>"period_id"</code>: period identifier.</li>
+</ul>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>allowed_upos</code></td>
+            <td>
+                  <code>list[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>UPOS tags used to build syntactic content rules.
+Defaults to <code>["NOUN", "PRON", "VERB", "ADV", "ADJ", "DET"]</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>[&#39;NOUN&#39;, &#39;PRON&#39;, &#39;VERB&#39;, &#39;ADV&#39;, &#39;ADJ&#39;, &#39;DET&#39;]</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>**kwargs</code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Additional keyword arguments.</p>
+              </div>
+            </td>
+            <td>
+                  <code>{}</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>DataFrame representing the syntactic content distribution.</p>
+<p>The DataFrame contains one row per period, a <code>"period_id"</code> column,
+and one column per rule. Rule columns are sorted alphabetically, and
+values represent normalized rule probabilities within each period.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <ul>
+<li>If <code>pos_annotations</code> is empty, the function returns an empty DataFrame with the expected column structure.</li>
+<li>Rules are generated as all permutations of the UPOS tags in <code>allowed_upos</code>.</li>
+<li>Probabilities are normalized within each period.</li>
+</ul>
+</details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="mustdrifter.preprocessing.pos_distributions.get_syntactic_style_distribution" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_syntactic_style_distribution</span><span class="p">(</span><span class="n">pos_annotations</span><span class="p">,</span> <span class="n">docs_df</span><span class="p">,</span> <span class="n">context_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">min_count</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+<a href="#mustdrifter.preprocessing.pos_distributions.get_syntactic_style_distribution" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Compute syntactic style distributions from UPOS tag sequences.</p>
+<p>This function estimates conditional UPOS transition probabilities based
+on sequential POS contexts. For each context, the probability of a
+subsequent UPOS tag is computed across temporal periods.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>pos_annotations</code></td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>DataFrame containing token-level UPOS annotations with at least the
+columns <code>"doc_id"</code>, <code>"id"</code>, and <code>"upos"</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>docs_df</code></td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>DataFrame containing document metadata with at least the columns
+<code>"doc_id"</code> and <code>"period_id"</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>context_size</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of preceding UPOS tags used to define the context.
+Defaults to 4.</p>
+              </div>
+            </td>
+            <td>
+                  <code>4</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>min_count</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Minimum number of global occurrences required for a context to be
+included in the distribution. Defaults to 4.</p>
+              </div>
+            </td>
+            <td>
+                  <code>4</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>**kwargs</code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Additional keyword arguments.</p>
+              </div>
+            </td>
+            <td>
+                  <code>{}</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Wide-format DataFrame where:</p>
+<ul>
+<li>each row corresponds to a <code>period_id</code>,</li>
+<li>each column represents a conditional probability of the form
+<code>P(next_upos | context)</code>,</li>
+<li>values correspond to the estimated conditional probabilities.</li>
+</ul>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Contexts with fewer than <code>min_count</code> global occurrences are excluded
+from the computation.</p>
+<p>Missing conditional probabilities are filled with <code>0.0</code>.</p>
+<p>If no valid contexts are found, an empty DataFrame containing only the
+<code>"period_id"</code> column is returned.</p>
+</details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="mustdrifter.preprocessing.pos_distributions.get_lexical_distribution" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_lexical_distribution</span><span class="p">(</span><span class="n">pos_annotations</span><span class="p">,</span> <span class="n">docs_df</span><span class="p">,</span> <span class="n">allowed_upos</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;NOUN&#39;</span><span class="p">,</span> <span class="s1">&#39;VERB&#39;</span><span class="p">,</span> <span class="s1">&#39;ADV&#39;</span><span class="p">,</span> <span class="s1">&#39;ADJ&#39;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+<a href="#mustdrifter.preprocessing.pos_distributions.get_lexical_distribution" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Calculate lexical distributions from part-of-speech annotations.</p>
+<p>This function computes the distribution of lexical items across periods
+using POS annotations and document metadata. Frequencies are normalized
+within each period to obtain probability distributions.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>pos_annotations</code></td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>DataFrame containing POS annotations. It must include at least
+the columns <code>"doc_id"</code>, <code>"upos"</code>, and either <code>"lemma"</code> or <code>"text"</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>docs_df</code></td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>DataFrame containing document metadata. It must include at least
+the columns <code>"doc_id"</code> and <code>"period_id"</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>allowed_upos</code></td>
+            <td>
+                  <code>list</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Universal POS tags included in the lexical distribution.
+Defaults to <code>["NOUN", "VERB", "ADV", "ADJ"]</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>[&#39;NOUN&#39;, &#39;VERB&#39;, &#39;ADV&#39;, &#39;ADJ&#39;]</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>**kwargs</code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Additional keyword arguments.</p>
+              </div>
+            </td>
+            <td>
+                  <code>{}</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>DataFrame representing the lexical distributions.</p>
+<p>Each row corresponds to a period and each column corresponds to a
+lexical item. Values represent normalized lexical frequencies within
+each period.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <ul>
+<li>The POS annotations are merged with the document metadata to associate each annotation with its corresponding period.</li>
+<li>Only annotations whose UPOS tags are included in <code>allowed_upos</code> are considered.</li>
+<li>Lexical frequencies are normalized by row sums so that each period distribution sums to 1.</li>
+<li>The resulting DataFrame is sorted by column names for consistent ordering.</li>
+</ul>
+</details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="mustdrifter.preprocessing.topic_distributions" class="doc doc-heading">
+            <code>topic_distributions</code>
+
+
+<a href="#mustdrifter.preprocessing.topic_distributions" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="mustdrifter.preprocessing.topic_distributions.get_thematic_dimension" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_thematic_dimension</span><span class="p">(</span><span class="n">docs_df</span><span class="p">,</span> <span class="n">nr_topics</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">embedding_model</span><span class="o">=</span><span class="s1">&#39;intfloat/multilingual-e5-large&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+<a href="#mustdrifter.preprocessing.topic_distributions.get_thematic_dimension" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Compute thematic topic distributions across periods using BERTopic.</p>
+<p>This function applies BERTopic to the input documents and calculates
+the distribution of topics across periods. Topic frequencies are
+normalized within each period to obtain probability distributions.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>docs_df</code></td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>DataFrame containing the input documents. It must include:</p>
+<ul>
+<li><code>"content"</code>: text content of each document.</li>
+<li><code>"period_id"</code>: identifier of the associated period.</li>
+</ul>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>nr_topics</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of topics generated by BERTopic.
+Defaults to 30.</p>
+              </div>
+            </td>
+            <td>
+                  <code>30</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>embedding_model</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Embedding model used by BERTopic.
+Defaults to <code>"intfloat/multilingual-e5-large"</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;intfloat/multilingual-e5-large&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>**kwargs</code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Additional keyword arguments passed to the BERTopic model.</p>
+              </div>
+            </td>
+            <td>
+                  <code>{}</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>DataFrame representing thematic topic distributions across periods.</p>
+<p>The DataFrame contains a <code>"period_id"</code> column and one column per
+topic. Values represent normalized topic frequencies within each
+period.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="mustdrifter.generators.TokenGenerator" class="doc doc-heading">
+            <code>TokenGenerator</code>
+
+
+<a href="#mustdrifter.generators.TokenGenerator" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+
+        <p>A class for tokenizing text inputs using a pretrained transformer model.</p>
+
+
+<details class="attributes:" open>
+  <summary>Attributes:</summary>
+  <p>pretrained_model : str
+    The identifier of the pretrained transformer model.
+batch_size : int
+    The number of text samples to process in a single batch.
+max_length : int
+    The maximum sequence length for tokenization.
+padding : bool or str
+    The padding strategy ('max_length', 'longest' (or True)).
+truncation : bool
+    Whether to truncate inputs to max_length.
+tokenizer : AutoTokenizer
+    The tokenizer instance loaded from the Hugging Face Transformers library.
+Encoding : namedtuple
+    A named tuple structure for storing tokenized inputs (input_ids, attention_mask).</p>
+</details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="mustdrifter.generators.TokenGenerator.__init__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">pretrained_model</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">tokenizer_max_len</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">tokenizer_padding</span><span class="o">=</span><span class="s1">&#39;max_length&#39;</span><span class="p">,</span> <span class="n">tokenizer_truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+<a href="#mustdrifter.generators.TokenGenerator.__init__" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initialize with tokenizer and configuration settings.</p>
+
+
+<details class="parameters:" open>
+  <summary>Parameters:</summary>
+  <p>pretrained_model : str
+    The name or path of the pretrained transformer model.
+batch_size : int, optional (default=8)
+    The batch size for processing text inputs.
+tokenizer_max_len : int, optional (default=512)
+    The maximum length for tokenized sequences.
+tokenizer_padding : bool or str, optional (default=<code>max_length</code>)
+    The padding strategy ('max_length', 'longest' (or True)).
+tokenizer_truncation : bool, optional (default=True)
+    Whether to truncate inputs to max_length.</p>
+</details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="mustdrifter.generators.TokenGenerator.tokenize_texts" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">tokenize_texts</span><span class="p">(</span><span class="n">texts</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span></code>
+
+<a href="#mustdrifter.generators.TokenGenerator.tokenize_texts" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Tokenize a list of text inputs in batches.</p>
+
+
+<details class="parameters:" open>
+  <summary>Parameters:</summary>
+  <p>texts : list of str
+    A list of text strings to tokenize.
+output : type, optional (default=list)
+    The type of the output (dict or list of namedtuples).</p>
+</details>
+
+<details class="returns:" open>
+  <summary>Returns:</summary>
+  <p>dict or list
+    - If output is dict: A dictionary with 'input_ids' and 'attention_mask' as tensor lists.
+    - If output is list: A list of namedtuples with 'input_ids' and 'attention_mask' attributes.</p>
+</details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="mustdrifter.generators.EmbeddingsGenerator" class="doc doc-heading">
+            <code>EmbeddingsGenerator</code>
+
+
+<a href="#mustdrifter.generators.EmbeddingsGenerator" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+
+        <p>A class for generating text embeddings using a pretrained transformer model.</p>
+
+
+<details class="attributes:" open>
+  <summary>Attributes:</summary>
+  <p>train_device : str
+    The device to use for computation ('cpu' or 'cuda').
+pretrained_model : str
+    The identifier of the pretrained transformer model.
+batch_size : int
+    The number of input samples to process in a single batch.
+pooling_mode : str
+    The pooling strategy to apply to the embeddings. Options:
+    - 'cls_pooling': Use the [CLS] token embedding.
+    - 'mean_pooling': Average all token embeddings.
+    - 'no_pooling': Return all token embeddings.
+device : torch.device
+    The PyTorch device to which the model is loaded.
+model : AutoModel
+    The transformer model loaded from the Hugging Face Transformers library.
+encoder : AutoModel
+    The encoder module of the model, used for generating embeddings.</p>
+</details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="mustdrifter.generators.EmbeddingsGenerator.__init__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">pretrained_model</span><span class="p">,</span> <span class="n">train_device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">pooling_mode</span><span class="o">=</span><span class="s1">&#39;cls_pooling&#39;</span><span class="p">)</span></code>
+
+<a href="#mustdrifter.generators.EmbeddingsGenerator.__init__" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initializes the EmbeddingsGenerator with a pretrained model.</p>
+
+
+<details class="parameters:" open>
+  <summary>Parameters:</summary>
+  <p>pretrained_model : str
+    The name or path of the pretrained transformer model.
+train_device : str, optional (default='cpu')
+    The device to use for computation ('cpu' or 'cuda').
+batch_size : int, optional (default=8)
+    The batch size for processing inputs.
+pooling_mode : str, optional (default='cls_pooling')
+    The pooling strategy ('cls_pooling', 'mean_pooling', or 'no_pooling').</p>
+</details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="mustdrifter.generators.EmbeddingsGenerator.generate_embeddings" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">generate_embeddings</span><span class="p">(</span><span class="n">inputs_tokenized</span><span class="p">)</span></code>
+
+<a href="#mustdrifter.generators.EmbeddingsGenerator.generate_embeddings" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Generate embeddings for tokenized inputs.</p>
+
+
+<details class="parameters:" open>
+  <summary>Parameters:</summary>
+  <p>inputs_tokenized : list
+    A list of tokenized inputs, where each input is an encoding with 'input_ids' and 'attention_mask'.</p>
+</details>
+
+<details class="returns:" open>
+  <summary>Returns:</summary>
+  <p>torch.Tensor
+    The generated embeddings as a tensor.</p>
+</details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
