@@ -159,38 +159,48 @@ def get_syntactic_style_distribution(
     **kwargs
 ):
     """
-    Compute the syntactic style distribution based on UPOS (Universal Part-of-Speech) tag sequences.
+    Compute syntactic style distributions from UPOS tag sequences.
 
-    This function calculates the conditional probabilities of a UPOS tag occurring given a specific 
-    context of preceding UPOS tags. The context size and minimum occurrence threshold for contexts 
-    can be customized. Contexts with fewer than `min_count` global occurrences are excluded from 
-    the computation.
+    This function estimates conditional UPOS transition probabilities based
+    on sequential POS contexts. For each context, the probability of a
+    subsequent UPOS tag is computed across temporal periods.
 
     Parameters
     ----------
-        pos_annotations : pd.DataFrame
-            DataFrame containing UPOS annotations with at least the columns "doc_id", "id", and "upos".
-        docs_df : pd.DataFrame
-            DataFrame containing document metadata with at least the columns "doc_id" and "period_id".
-        context_size : int, optional 
-            The number of preceding UPOS tags to consider as context. Defaults to 4.
-        min_count : int, optional
-            The minimum number of global occurrences required for a context to be included. Defaults to 4.
-        **kwargs
-            Additional keyword arguments (not used in the current implementation).
+    pos_annotations : pd.DataFrame
+        DataFrame containing token-level UPOS annotations with at least the
+        columns `"doc_id"`, `"id"`, and `"upos"`.
+    docs_df : pd.DataFrame
+        DataFrame containing document metadata with at least the columns
+        `"doc_id"` and `"period_id"`.
+    context_size : int, optional
+        Number of preceding UPOS tags used to define the context.
+        Defaults to 4.
+    min_count : int, optional
+        Minimum number of global occurrences required for a context to be
+        included in the distribution. Defaults to 4.
+    **kwargs
+        Additional keyword arguments.
 
     Returns
     -------
     pd.DataFrame
-        A wide-format DataFrame where:
-            - Each row corresponds to a unique `period_id`.
-            - Each column represents a conditional probability of the form P(next_upos|context).
-            - The values are the computed probabilities, with missing values filled with 0.0.
+        Wide-format DataFrame where:
+
+        - each row corresponds to a `period_id`,
+        - each column represents a conditional probability of the form
+        `P(next_upos | context)`,
+        - values correspond to the estimated conditional probabilities.
 
     Notes
     -----
-    - If the input DataFrame `pos_annotations` is empty or no valid contexts are found, an empty DataFrame with only the "period_id" column is returned.
-    - The resulting DataFrame is sorted by `period_id` and the conditional probability columns are sorted alphabetically.
+    Contexts with fewer than `min_count` global occurrences are excluded
+    from the computation.
+
+    Missing conditional probabilities are filled with `0.0`.
+
+    If no valid contexts are found, an empty DataFrame containing only the
+    `"period_id"` column is returned.
     """
     df = pos_annotations.merge(
         docs_df[["doc_id", "period_id"]],

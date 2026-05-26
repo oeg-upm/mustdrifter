@@ -82,29 +82,40 @@ def get_pipeline(lang, device="cuda"):
 
 def annotate_pos(dataset, dataset_name, device="cuda"):
     """
-    Annotates parts of speech (POS) for a given dataset.
+    Annotate part-of-speech (POS) information for a dataset.
 
-    This function processes a dataset by detecting the language of each document, 
-    and then annotates parts of speech (POS) tags for each language group using 
-    a language-specific POS tagger. The annotated dataset and POS tags are saved 
-    to CSV files if a dataset name is provided.
-    
+    This function detects the language of each document and applies
+    language-specific POS tagging pipelines to generate token-level POS
+    annotations. Annotated datasets can optionally be exported to CSV files.
+
     Parameters
     ----------
-        dataset (pd.DataFrame): The input dataset containing at least a "content" column 
-            with text data to be processed.
-        dataset_name (str): The name of the dataset, used for saving the output files. 
-            If None, the results are not saved to files.
-        device (str, optional): The device to use for processing (e.g., "cuda" or "cpu"). 
-            Defaults to "cuda".
-    
+    dataset : pd.DataFrame
+        Input dataset containing at least a `"content"` column with the
+        documents to process.
+    dataset_name : str
+        Dataset name used to export the generated files. If None, results
+        are not exported.
+    device : str, optional
+        Computation device used during POS annotation, such as `"cpu"` or
+        `"cuda"`. Defaults to `"cuda"`.
+
     Returns
     -------
     tuple
-        A tuple containing:
-            - pd.DataFrame: The input dataset with additional columns for document ID, 
-              content (processed), and detected language.
-            - pd.DataFrame: A DataFrame containing the POS annotations for the dataset.
+        Tuple containing:
+
+        - `pd.DataFrame`: input dataset enriched with document identifiers,
+        processed content, and detected language labels.
+        - `pd.DataFrame`: token-level POS annotations.
+
+    Notes
+    -----
+    Language detection is performed before POS annotation in order to apply
+    language-specific tagging pipelines.
+
+    POS annotations are generated independently for each detected language
+    group.
     """
     dataset["doc_id"]=   dataset.index
     dataset["content"]=  dataset["content"].astype(str).apply(remove_emojis)
