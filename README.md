@@ -52,7 +52,7 @@ and estimates temporal drift using complementary forms of:
 Requires Python 3.12+.
 
 ```bash
-git clone https://github.com/iguillenp/mustdrifter.git
+git clone https://github.com/oeg-upm/mustdrifter.git
 cd mustdrifter
 poetry install
 ```
@@ -99,7 +99,7 @@ drifter.report_heatmaps(
 
 ## Documentation
 
-Full documentation is available [here](https://iguillenp.github.io/mustdrifter/).
+Full documentation is available [here](https://oeg-upm.github.io/mustdrifter/).
 
 Including:
 
