@@ -6,9 +6,9 @@ theme:
   name: material
   logo: assets/logo.svg
 
-site_url: https://iguillenp.github.io/mustdrifter/
-repo_url: https://github.com/iguillenp/mustdrifter
-repo_name: iguillenp/mustdrifter
+site_url: https://oeg-upm.github.io/mustdrifter/
+repo_url: https://github.com/oeg-upm/mustdrifter
+repo_name: oeg-upm/mustdrifter
 
 plugins:
   - search
