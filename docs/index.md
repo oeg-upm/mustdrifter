@@ -47,4 +47,16 @@ MuSTDrifter supports discourse analysis across:
 
 ## Citation
 
-TBD
+```bibtex
+@article{Guillen-Pacho2026,
+  author={Guill{\'e}n-Pacho, Ibai  and Badenes-Olmedo, Carlos and Corcho, Oscar},
+  title={An unsupervised multidimensional data drift framework for measuring multilingual and cross-national political discourse shifts},
+  journal={Social Network Analysis and Mining},
+  year={2026},
+  abstract={Political discourse on social networks continuously evolves across electoral cycles and communicative contexts, producing measurable changes in discourse distributions over time. This work introduces an unsupervised framework for detecting and quantifying these changes through multidimensional drift analysis. The approach models discourse evolution across semantic, lexical, thematic, and syntactic dimensions by combining complementary drift detection techniques over text, enabling systematic and reproducible analyses of discourse change. The framework is applied to multilingual political discourse published on party manifestos and Facebook between 2014 and 2023 across multiple electoral cycles and institutional levels in Spain and France. Results show that the proposed framework is able to detect, in a fully unsupervised manner, structural patterns consistent with known dynamics of political communication, including stable distinctions between campaign and routine discourse. At the same time, the framework provides measurable and objective indicators that enable more systematic analyses of discourse evolution across comparable political scenarios.},
+  issn={},
+  doi={10.1007/s13278-026-01646-9},
+  html={https://doi.org/10.1007/s13278-026-01646-9},
+  month = {Sep}
+}
+```

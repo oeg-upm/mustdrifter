@@ -7,9 +7,7 @@
 ## Install with Poetry
 
 ```bash
-git clone https://github.com/your-user/mustdrifter.git
-cd mustdrifter
-poetry install
+pip install mustdrifter
 ```
 
 ## Verify installation
