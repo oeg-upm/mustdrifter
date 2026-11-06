@@ -1,7 +1,7 @@
 # MuSTDrifter
 
 <p align="center">
-  <img src="docs/assets/logo.svg" width="180">
+  <img src="https://github.com/oeg-upm/mustdrifter/blob/16005e9945e9e5df960080871078cf9c07db6169/docs/assets/logo.svg" width="180">
 </p>
 
 <p align="center">
