@@ -495,7 +495,7 @@ def plot_aggregated_dimension_values_heatmap(
         cm.ScalarMappable(norm=norm, cmap=cmap),
         cax=cax,
     )
-    colorbar.set_label("Normalized drift score", rotation=270, labelpad=18, labelsize=18)
+    colorbar.set_label("Normalized drift score", rotation=270, labelpad=18, fontsize=18)
 
     legend_lines = [
         f"{dimension_short_names.get(dim, dim)}  {dimension_labels.get(dim, dim)}"
