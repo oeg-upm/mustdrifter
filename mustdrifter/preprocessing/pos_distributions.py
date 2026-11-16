@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 from itertools import permutations
 import re
+import os
+import json
 import logging
 logger = logging.getLogger(__name__)
 
@@ -156,6 +158,7 @@ def get_syntactic_style_distribution(
     docs_df,
     context_size=4,
     min_count=4,
+    dimensions_path=None,
     **kwargs
 ):
     """
@@ -179,6 +182,14 @@ def get_syntactic_style_distribution(
     min_count : int, optional
         Minimum number of global occurrences required for a context to be
         included in the distribution. Defaults to 4.
+    dimensions_path : str, optional
+        Path to a JSON file containing the feature dimensions to use.
+        If the file exists, the dimensions are loaded from it to ensure
+        a consistent feature space across different corpora. If the file
+        does not exist, the dimensions identified from the current corpus
+        are saved to this path for subsequent reuse. If `None`, dimensions
+        are independently identified for the current corpus without
+        loading or saving a feature schema. Defaults to `None`.
     **kwargs
         Additional keyword arguments.
 
@@ -195,12 +206,18 @@ def get_syntactic_style_distribution(
     Notes
     -----
     Contexts with fewer than `min_count` global occurrences are excluded
-    from the computation.
+    when identifying new feature dimensions.
+
+    When loading dimensions from an existing file, only the stored
+    dimensions are considered, regardless of their frequency in the
+    current corpus. Dimensions not observed in the current corpus are
+    assigned a probability of `0.0`.
 
     Missing conditional probabilities are filled with `0.0`.
 
-    If no valid contexts are found, an empty DataFrame containing only the
-    `"period_id"` column is returned.
+    If no valid contexts are found, an empty DataFrame containing only
+    the `"period_id"` column is returned.
+    
     """
     df = pos_annotations.merge(
         docs_df[["doc_id", "period_id"]],
@@ -290,6 +307,23 @@ def get_syntactic_style_distribution(
     result["probability"] = result["upos_count"] / result["context_count"]
     result["dimension"] = "P(" + result["next_upos"] + "|" + result["context"] + ")"
 
+    # Load or generate dimensions
+    if dimensions_path is not None:
+        if os.path.exists(dimensions_path):
+            with open(dimensions_path, "r") as f:
+                dimensions = json.load(f)
+        else:
+            dimensions = sorted(result["dimension"].unique())
+    
+            os.makedirs(os.path.dirname(os.path.abspath(dimensions_path)), exist_ok=True)
+    
+            with open(dimensions_path, "w") as f:
+                json.dump(dimensions, f, indent=4)
+    else:
+        dimensions = sorted(result["dimension"].unique())
+
+    result = result[result["dimension"].isin(dimensions)]
+
     wide_df = (
         result.pivot_table(
             index="period_id",
@@ -300,10 +334,13 @@ def get_syntactic_style_distribution(
         .reset_index()
     )
 
+    wide_df = wide_df.reindex(
+        columns=["period_id"] + dimensions,
+        fill_value=0.0,
+    )
+
     wide_df.columns.name = None
 
-    cols = ["period_id"] + sorted(c for c in wide_df.columns if c != "period_id")
-    wide_df = wide_df[cols]
 
     return wide_df
 
