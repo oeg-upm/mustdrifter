@@ -158,7 +158,7 @@ def get_syntactic_style_distribution(
     docs_df,
     context_size=4,
     min_count=4,
-    dimensions_path=None,
+    syntactic_style_dimensions_path=None,
     **kwargs
 ):
     """
@@ -182,7 +182,7 @@ def get_syntactic_style_distribution(
     min_count : int, optional
         Minimum number of global occurrences required for a context to be
         included in the distribution. Defaults to 4.
-    dimensions_path : str, optional
+    syntactic_style_dimensions_path : str, optional
         Path to a JSON file containing the feature dimensions to use.
         If the file exists, the dimensions are loaded from it to ensure
         a consistent feature space across different corpora. If the file
