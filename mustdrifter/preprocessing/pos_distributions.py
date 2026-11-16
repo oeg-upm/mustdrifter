@@ -308,16 +308,16 @@ def get_syntactic_style_distribution(
     result["dimension"] = "P(" + result["next_upos"] + "|" + result["context"] + ")"
 
     # Load or generate dimensions
-    if dimensions_path is not None:
-        if os.path.exists(dimensions_path):
-            with open(dimensions_path, "r") as f:
+    if syntactic_style_dimensions_path is not None:
+        if os.path.exists(syntactic_style_dimensions_path):
+            with open(syntactic_style_dimensions_path, "r") as f:
                 dimensions = json.load(f)
         else:
             dimensions = sorted(result["dimension"].unique())
     
-            os.makedirs(os.path.dirname(os.path.abspath(dimensions_path)), exist_ok=True)
+            os.makedirs(os.path.dirname(os.path.abspath(syntactic_style_dimensions_path)), exist_ok=True)
     
-            with open(dimensions_path, "w") as f:
+            with open(syntactic_style_dimensions_path, "w") as f:
                 json.dump(dimensions, f, indent=4)
     else:
         dimensions = sorted(result["dimension"].unique())
@@ -431,6 +431,7 @@ def get_lexical_distribution(
     pos_annotations, 
     docs_df, 
     allowed_upos=["NOUN", "VERB", "ADV", "ADJ"],
+    lexical_dimensions_path=None,
     **kwargs
 ):
     """
@@ -451,6 +452,8 @@ def get_lexical_distribution(
     allowed_upos : list, optional
         Universal POS tags included in the lexical distribution.
         Defaults to `["NOUN", "VERB", "ADV", "ADJ"]`.
+    lexical_dimensions_path : str, optional
+        TO-DO
     **kwargs
         Additional keyword arguments.
 
@@ -485,27 +488,51 @@ def get_lexical_distribution(
 
     vocabulary = np.sort(df[lexical_column].dropna().unique())
 
+    # Load or generate vocabulary
+    if lexical_dimensions_path is not None and os.path.exists(lexical_dimensions_path):
+        with open(lexical_dimensions_path, "r") as f:
+            vocabulary = json.load(f)
+    else:
+        vocabulary = np.sort(df[lexical_column].dropna().unique()).tolist()
+    
+        if lexical_dimensions_path is not None:
+            os.makedirs(os.path.dirname(os.path.abspath(lexical_dimensions_path)), exist_ok=True)
+    
+            with open(lexical_dimensions_path, "w") as f:
+                json.dump(vocabulary, f, indent=4)
+    
+    # Count lexical occurrences
     counts = (
         df.groupby(["period_id", lexical_column], observed=True)
         .size()
         .reset_index(name="freq")
     )
+
     logger.debug("Counted occurrences of each word per period_id.")
 
+    # Build lexical distribution
     lexical_dist = (
         counts
         .pivot(index="period_id", columns=lexical_column, values="freq")
-        .reindex(columns=vocabulary, fill_value=0)
-        .fillna(0)
-        .sort_index()
-        .pipe(lambda x: x.div(x.sum(axis=1), axis=0))
         .reset_index()
     )
     logger.debug("Calculated lexical distribution and normalized by row sums.")
 
+    lexical_dist = lexical_dist.reindex(
+        columns=["period_id"] + vocabulary,
+        fill_value=0
+    )
+    
+    lexical_dist = (
+        lexical_dist
+        .set_index("period_id")
+        .fillna(0)
+        .pipe(lambda x: x.div(x.sum(axis=1), axis=0))
+        .reset_index()
+    )
+    
     lexical_dist.columns.name = None
-    cols = ["period_id"] + sorted(c for c in lexical_dist.columns if c != "period_id")
-    lexical_dist = lexical_dist[cols]
+    
     logger.debug("Reordered columns in lexical distribution DataFrame.")
 
     return lexical_dist
