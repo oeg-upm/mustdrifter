@@ -453,7 +453,14 @@ def get_lexical_distribution(
         Universal POS tags included in the lexical distribution.
         Defaults to `["NOUN", "VERB", "ADV", "ADJ"]`.
     lexical_dimensions_path : str, optional
-        TO-DO
+        Path to a JSON file containing the vocabulary to use as feature
+        dimensions. If the file exists, the vocabulary is loaded from it
+        to ensure a consistent feature space across different corpora.
+        If the file does not exist, the vocabulary identified from the
+        current corpus is saved to this path for subsequent reuse.
+        If `None`, the vocabulary is independently identified for the
+        current corpus without loading or saving a feature schema.
+        Defaults to `None`.
     **kwargs
         Additional keyword arguments.
 
@@ -472,6 +479,12 @@ def get_lexical_distribution(
     - Only annotations whose UPOS tags are included in `allowed_upos` are considered.
     - Lexical frequencies are normalized by row sums so that each period distribution sums to 1.
     - The resulting DataFrame is sorted by column names for consistent ordering.
+    - When loading a vocabulary from an existing file, only the stored
+      lexical items are considered, regardless of their occurrence in
+      the current corpus.
+    - Lexical items absent from the current corpus are assigned a
+      frequency of `0` before normalization.
+    - Lexical items not included in the stored vocabulary are ignored.
     """
     lexical_column= "lemma" # can be changed to "text" if we want to use the original word forms instead of lemmas
 
