@@ -1,4 +1,4 @@
-
+import os
 from bertopic import BERTopic
 
 import logging
@@ -9,6 +9,7 @@ def get_thematic_dimension(
     docs_df,
     nr_topics=30,
     embedding_model="intfloat/multilingual-e5-large",
+    thematic_dimensions_path= None,
     **kwargs
     ):
     """
@@ -32,6 +33,15 @@ def get_thematic_dimension(
     embedding_model : str, optional
         Embedding model used by BERTopic.
         Defaults to `"intfloat/multilingual-e5-large"`.
+    thematic_dimensions_path : str, optional
+        Path to the directory used to store and load the BERTopic model.
+        If the path exists, the previously trained model is loaded and
+        used to assign topics to the input documents, ensuring a
+        consistent thematic feature space across different corpora.
+        If the path does not exist, a new BERTopic model is trained on
+        the current corpus and saved to this path for subsequent reuse.
+        If `None`, a new model is trained independently for the current
+        corpus without loading or saving a model. Defaults to `None`.
     **kwargs
         Additional keyword arguments passed to the BERTopic model.
 
@@ -43,6 +53,16 @@ def get_thematic_dimension(
         The DataFrame contains a `"period_id"` column and one column per
         topic. Values represent normalized topic frequencies within each
         period.
+
+    
+    Notes
+    -----
+    - When loading a previously trained model, `nr_topics` and
+      `embedding_model` are not used to retrain or modify the model.
+    - Topic identifiers are obtained from the loaded or newly trained
+      BERTopic model to ensure a consistent feature space.
+    - Topics not observed in a given period are assigned a frequency
+      of `0` before normalization.
     """
     
     logger.debug("Computing thematic dimension with BERTopic")
@@ -51,13 +71,34 @@ def get_thematic_dimension(
 
     docs = df["content"].tolist()
 
-    topic_model = BERTopic(
-        embedding_model=embedding_model,
-        nr_topics=nr_topics,
-        verbose=True
-    )
+    
+    # Load or train BERTopic model
+    if thematic_dimensions_path is not None and os.path.exists(thematic_dimensions_path):
+        topic_model = BERTopic.load(thematic_dimensions_path, embedding_model=embedding_model)
+        topics, _ = topic_model.transform(docs)
 
-    topics, _ = topic_model.fit_transform(docs)
+    else:
+        topic_model = BERTopic(
+            embedding_model=embedding_model,
+            nr_topics=nr_topics,
+            verbose=True,
+        )
+
+        topics, _ = topic_model.fit_transform(docs)
+
+        if thematic_dimensions_path is not None:
+            os.makedirs(
+                os.path.dirname(os.path.abspath(thematic_dimensions_path)),
+                exist_ok=True
+            )
+
+            topic_model.save(
+                thematic_dimensions_path,
+                serialization="pytorch",
+                save_embedding_model=True
+            )
+
+    
     df["topic"] = topics
     logger.debug("BERTopic fitting complete")
     
