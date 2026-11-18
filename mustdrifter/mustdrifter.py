@@ -700,7 +700,12 @@ class MuSTDrifter:
 
             Defaults to all available dimensions.
         reused_framework_path : str, optional
-            TO-DO
+            Path to a previously generated framework directory. When provided,
+            the existing lexical, thematic, and syntactic style dimension
+            definitions are reused instead of generating new ones. The path
+            must point to a framework directory containing the corresponding
+            files under `data/lexical/`, `data/thematic/`, and
+            `data/syntactic/style/`.
         **kwargs
             Additional keyword arguments passed to the corresponding
             dimension generators.
