@@ -134,14 +134,14 @@ class MuSTDrifter:
         self.drift_path=     f"{self.base_path}/drift"
         self.report_path=    f"{self.base_path}/report"
 
-        self.syntax_content_data_path=       f"{self.data_path}/syntax/content"
-        self.syntax_style_data_path=         f"{self.data_path}/syntax/style"
+        self.syntax_content_data_path=       f"{self.data_path}/syntactic/content"
+        self.syntax_style_data_path=         f"{self.data_path}/syntactic/style"
         self.lexical_data_path=              f"{self.data_path}/lexical"
         self.semantic_data_path=             f"{self.data_path}/semantic"
         self.thematic_data_path=             f"{self.data_path}/thematic"
 
-        self.syntax_content_drift_path= f"{self.drift_path}/syntax/content"
-        self.syntax_style_drift_path=   f"{self.drift_path}/syntax/style"
+        self.syntax_content_drift_path= f"{self.drift_path}/syntactic/content"
+        self.syntax_style_drift_path=   f"{self.drift_path}/syntactic/style"
         self.lexical_drift_path=        f"{self.drift_path}/lexical"
         self.semantic_drift_path=       f"{self.drift_path}/semantic"
         self.thematic_drift_path=       f"{self.drift_path}/thematic"
@@ -674,15 +674,20 @@ class MuSTDrifter:
         Outlier topics labeled as `-1` are automatically removed from the
         exported distributions.
         """
+        thematic_dimensions_path = kwargs.pop(
+            "thematic_dimensions_path",
+            f"{self.thematic_data_path}/topic_model"
+        )
+        
         self.logger.info("Generating thematic dimension...")
-        self.thematic_dimension= get_thematic_dimension(self.df, **kwargs)
+        self.thematic_dimension= get_thematic_dimension(self.df, thematic_dimensions_path=thematic_dimensions_path, **kwargs)
         self.thematic_dimension = self.thematic_dimension.drop(columns=[-1, "-1"], errors="ignore")
         self.logger.debug("Thematic dimension generated.")
         
         self._export_dimension_annotations(self.thematic_dimension, self.thematic_data_path)
         self.logger.info("Thematic features exported.")
 
-    def generate_drift_dimensions(self, dimensions=["semantic", "syntactic_content", "syntactic_style", "lexical", "thematic"], **kwargs):
+    def generate_drift_dimensions(self, dimensions=["semantic", "syntactic_content", "syntactic_style", "lexical", "thematic"], reused_framework_path=None, **kwargs):
         """
         Generate discourse representations for the selected dimensions.
 
@@ -694,6 +699,8 @@ class MuSTDrifter:
             `"syntactic_style"`, `"lexical"`, and `"thematic"`.
 
             Defaults to all available dimensions.
+        reused_framework_path : str, optional
+            TO-DO
         **kwargs
             Additional keyword arguments passed to the corresponding
             dimension generators.
@@ -705,7 +712,11 @@ class MuSTDrifter:
         """
 
         self.logger.info(f"Generating {dimensions} dimensions for drift detection...")
-
+        if reused_framework_path is not None:
+            kwargs["lexical_dimensions_path"]= f"{reused_framework_path}/data/lexical/dimensions_names.json" 
+            kwargs["thematic_dimensions_path"]= f"{reused_framework_path}/data/thematic/topic_model"
+            kwargs["syntactic_style_dimensions_path"] = f"{reused_framework_path}/data/syntactic/style/dimensions_names.json" 
+            
         if "syntactic_content" in dimensions:
             self.generate_syntax_content_dimension(**kwargs)
             self.logger.debug("Syntactic content dimension generated and exported.")
