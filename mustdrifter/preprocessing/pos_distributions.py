@@ -185,11 +185,10 @@ def get_syntactic_style_distribution(
     syntactic_style_dimensions_path : str, optional
         Path to a JSON file containing the feature dimensions to use.
         If the file exists, the dimensions are loaded from it to ensure
-        a consistent feature space across different corpora. If the file
-        does not exist, the dimensions identified from the current corpus
-        are saved to this path for subsequent reuse. If `None`, dimensions
-        are independently identified for the current corpus without
-        loading or saving a feature schema. Defaults to `None`.
+        a consistent feature space across different corpora. If `None` 
+        or the file does not exists, dimensions are independently 
+        identified for the current corpus without loading or saving 
+        a feature schema. Defaults to `None`.
     **kwargs
         Additional keyword arguments.
 
@@ -217,7 +216,6 @@ def get_syntactic_style_distribution(
 
     If no valid contexts are found, an empty DataFrame containing only
     the `"period_id"` column is returned.
-    
     """
     df = pos_annotations.merge(
         docs_df[["doc_id", "period_id"]],
@@ -314,11 +312,6 @@ def get_syntactic_style_distribution(
                 dimensions = json.load(f)
         else:
             dimensions = sorted(result["dimension"].unique())
-    
-            os.makedirs(os.path.dirname(os.path.abspath(syntactic_style_dimensions_path)), exist_ok=True)
-    
-            with open(syntactic_style_dimensions_path, "w") as f:
-                json.dump(dimensions, f, indent=4)
     else:
         dimensions = sorted(result["dimension"].unique())
 
@@ -456,10 +449,8 @@ def get_lexical_distribution(
         Path to a JSON file containing the vocabulary to use as feature
         dimensions. If the file exists, the vocabulary is loaded from it
         to ensure a consistent feature space across different corpora.
-        If the file does not exist, the vocabulary identified from the
-        current corpus is saved to this path for subsequent reuse.
-        If `None`, the vocabulary is independently identified for the
-        current corpus without loading or saving a feature schema.
+        If `None` or the file does not exist, the vocabulary is independently 
+        identified for the current corpus without loading or saving a feature schema.
         Defaults to `None`.
     **kwargs
         Additional keyword arguments.
@@ -507,12 +498,6 @@ def get_lexical_distribution(
             vocabulary = json.load(f)
     else:
         vocabulary = np.sort(df[lexical_column].dropna().unique()).tolist()
-    
-        if lexical_dimensions_path is not None:
-            os.makedirs(os.path.dirname(os.path.abspath(lexical_dimensions_path)), exist_ok=True)
-    
-            with open(lexical_dimensions_path, "w") as f:
-                json.dump(vocabulary, f, indent=4)
     
     # Count lexical occurrences
     counts = (
