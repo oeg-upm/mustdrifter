@@ -23,7 +23,7 @@ def _finalize_table(table, fill_diagonal):
     return table
 
 
-def _normalize_table(table, method=None):
+def _normalize_table(table, method=None, **kwargs):
     if method is None:
         return table.copy()
 
@@ -42,8 +42,12 @@ def _normalize_table(table, method=None):
     normalized = values.copy()
 
     if method == "minmax":
-        min_val = np.nanmin(valid_values)
-        max_val = np.nanmax(valid_values)
+        min_val, max_val = kwargs.pop(
+            "minmax_range",
+            (np.nanmin(valid_values), np.nanmax(valid_values))
+        )
+        logger.debug(f"Normalizing values with min:{min_val} and max:{max_val}") 
+
         denom = max_val - min_val
 
         if denom == 0:
@@ -74,18 +78,26 @@ def _aggregate_tables(
     min_values,
     fill_diagonal,
     normalize=None,
+    **kwargs
 ):
     aggregated = _new_table(periods)
 
     prepared_tables = []
-
-    for table in tables_to_aggregate:
+    
+    minmax_ranges = kwargs.pop(
+                "minmax_ranges", None
+            )
+    
+    for n_table, table in enumerate(tables_to_aggregate):
         prepared_table = table.copy()
 
         if absolute_values:
             prepared_table = prepared_table.abs()
 
-        prepared_table = _normalize_table(prepared_table, method=normalize)
+        if minmax_ranges is not None:
+            kwargs["minmax_range"]= minmax_ranges[n_table]
+            
+        prepared_table = _normalize_table(prepared_table, method=normalize, **kwargs)
         prepared_tables.append(prepared_table)
 
     for reference_period, test_period in product(periods, periods):
@@ -176,7 +188,11 @@ def get_drift_tables(
     normalize : {None, "minmax", "zscore"}, optional
         Normalization method. Defaults to "minmax".
     **kwargs
-        Additional keyword arguments.
+        Additional keyword arguments:
+        global_minmax_ranges : dict, optional
+            Dictionary with the range of minimum and maximum values for min_max 
+            nromalization per dimension and metric. If None the minimum and 
+            maximum values of the tables are computed. 
 
     Returns
     -------
@@ -311,44 +327,57 @@ def get_drift_tables(
     if aggregate_by is None:
         return cleaned_base_tables
 
+    logger.info("Aggregating drift tables by metric.")
+    aggregated_by_dimension = {}
+
+    
+    global_minmax_ranges = kwargs.pop("global_minmax_ranges", None)
+    
+    for dimension, metric_tables in cleaned_base_tables.items():
+        tables_to_aggregate = metric_tables.values()
+        
+        if not tables_to_aggregate:
+            continue
+        
+        if global_minmax_ranges is not None:
+            minmax_ranges= []
+            for metric in metric_tables.keys():
+                minmax_ranges.append(global_minmax_ranges[dimension][metric])
+            logger.debug(f"Global min_max ranges provided. Aggregating {dimension} with {global_minmax_ranges[dimension]} ")
+
+        else: 
+            minmax_ranges= None
+        
+        aggregated_table = _aggregate_tables(
+            tables_to_aggregate=tables_to_aggregate,
+            periods=periods,
+            aggregation_func=aggregation_func,
+            absolute_values=absolute_values,
+            min_values=min_values,
+            fill_diagonal=fill_diagonal,
+            normalize=normalize,
+            minmax_ranges= minmax_ranges,
+            **kwargs
+        )
+
+        if aggregated_table.isna().all().all():
+            continue
+
+        aggregated_by_dimension[dimension] = aggregated_table
+    
     if aggregate_by == "metric":
-        aggregated_by_dimension = {}
-
-        for dimension, metric_tables in cleaned_base_tables.items():
-            tables_to_aggregate = list(metric_tables.values())
-
-            if not tables_to_aggregate:
-                continue
-
-            aggregated_table = _aggregate_tables(
-                tables_to_aggregate=tables_to_aggregate,
-                periods=periods,
-                aggregation_func=aggregation_func,
-                absolute_values=absolute_values,
-                min_values=min_values,
-                fill_diagonal=fill_diagonal,
-                normalize=normalize,
-            )
-
-            if aggregated_table.isna().all().all():
-                continue
-
-            aggregated_by_dimension[dimension] = aggregated_table
-
         return aggregated_by_dimension
 
+    logger.info("Aggregating tables by dimension")
     aggregated_all = _aggregate_tables(
-        tables_to_aggregate=[
-            table
-            for metric_tables in cleaned_base_tables.values()
-            for table in metric_tables.values()
-        ],
+        tables_to_aggregate= aggregated_by_dimension.values(),
         periods=periods,
         aggregation_func=aggregation_func,
         absolute_values=absolute_values,
         min_values=min_values,
         fill_diagonal=fill_diagonal,
         normalize=normalize,
+        **kwargs
     )
 
     return aggregated_all
